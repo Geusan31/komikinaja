@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Bell, Menu, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Logo from '../assets/logo_komikinaja.png';
 
 export const Navbar: React.FC = () => {
   const { user } = useAuth();
@@ -18,8 +19,8 @@ export const Navbar: React.FC = () => {
             {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
           
-          <Link to="/" className="text-3xl font-bold text-[#F4EFE6] font-heading">
-            K
+          <Link to="/" className="flex items-center">
+            <img src={Logo} alt="KomikinAja Logo" className="h-8 md:h-10 object-contain" />
           </Link>
           
           <div className="hidden md:flex items-center gap-8 font-semibold text-sm">

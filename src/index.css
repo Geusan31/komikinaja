@@ -2,10 +2,10 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #1F2544; /* Dark blue/navy used in buttons and author */
+  --color-primary: #1F2544;
   --color-primary-hover: #161A30;
-  --color-background: #F4EFE6; /* Cream/beige background */
-  --color-surface: #EAE3D2; /* Slightly darker for input backgrounds */
+  --color-background: #F4EFE6;
+  --color-surface: #EAE3D2;
   
   --font-sans: 'Outfit', 'Plus Jakarta Sans', sans-serif;
   --font-heading: 'Outfit', sans-serif;

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Logo from '../assets/logo_komikinaja.png';
 
 export const Footer: React.FC = () => {
   return (
@@ -14,7 +15,7 @@ export const Footer: React.FC = () => {
       <div className="bg-[#1F2544] w-full pt-0 pb-20 px-8 text-white flex flex-col md:flex-row justify-between items-start -mt-1 relative z-10">
         <div className="max-w-sm mb-8 md:mb-0 text-left">
           <Link to="/" className="text-5xl font-bold font-heading inline-block mb-4">
-            K
+            <img src={Logo} alt="KomikinAja Logo" className="h-8 md:h-10 object-contain" />
           </Link>
           <p className="text-sm text-gray-300 leading-relaxed">
             Tempat komik buat warga indonesia dan sekitarnya, update terus tiap hari.
