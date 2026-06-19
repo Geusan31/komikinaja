@@ -5,6 +5,7 @@ import { categories } from '../data/dummy';
 import { Search } from 'lucide-react';
 import { fetchManga } from '../services/api';
 import { Link, useSearchParams } from 'react-router-dom';
+import emptyIllustration from '../assets/empty_ilustration.png';
 
 export const Category: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -118,25 +119,32 @@ export const Category: React.FC = () => {
           </div>
         </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-8 pb-12">
-          {mangas.map((manga) => (
-            <Link to={`/comic/${manga.mal_id}`} key={manga.mal_id}>
-              <ComicCard 
-                title={manga.title}
-                cover={manga.images?.webp?.image_url || manga.images?.jpg?.image_url || "https://placehold.co/400x600"}
-                episode={manga.chapters ? `Chapters: ${manga.chapters}` : 'Ongoing'}
-                likes={(manga.score || 0).toString()}
-                views={(manga.members || 0).toLocaleString()}
-                isNew={manga.status === "Publishing"}
-              />
-            </Link>
-          ))}
-        </div>
-
-        {loading && (
-          <div className="flex justify-center py-4 text-gray-500 font-bold animate-pulse">
+        {/* Content */}
+        {loading ? (
+          <div className="flex justify-center py-20 text-[#1F2544] font-bold text-xl animate-pulse">
             Loading...
+          </div>
+        ) : mangas.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 gap-2 text-center">
+            <img src={emptyIllustration} alt="Not Found" className="w-80 h-80 object-contain drop-shadow-lg mb-10" />
+            <h3 className="text-2xl font-bold text-gray-500 mt-[-20px]">
+              '{searchQuery || "Manga"}' Not Found
+            </h3>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-8 pb-12">
+            {mangas.map((manga) => (
+              <Link to={`/comic/${manga.mal_id}`} key={manga.mal_id}>
+                <ComicCard 
+                  title={manga.title}
+                  cover={manga.images?.webp?.image_url || manga.images?.jpg?.image_url || "https://placehold.co/400x600"}
+                  episode={manga.chapters ? `Chapters: ${manga.chapters}` : 'Ongoing'}
+                  likes={(manga.score || 0).toString()}
+                  views={(manga.members || 0).toLocaleString()}
+                  isNew={manga.status === "Publishing"}
+                />
+              </Link>
+            ))}
           </div>
         )}
 

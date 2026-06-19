@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { Bell, Menu, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import Logo from '../assets/logo_komikinaja.png';
 
 export const Navbar: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   return (
@@ -24,9 +26,9 @@ export const Navbar: React.FC = () => {
           </Link>
           
           <div className="hidden md:flex items-center gap-8 font-semibold text-sm">
-            <Link to="/" className="text-[#F4EFE6] hover:text-black">Rekomendasi</Link>
-            <Link to="/trending" className="text-[#F4EFE6] hover:text-black">Trending</Link>
-            <Link to="/category" className="text-[#F4EFE6] hover:text-black">Kategori</Link>
+            <Link to="/" className="text-[#F4EFE6] hover:text-black">{t('nav.recommendation')}</Link>
+            <Link to="/trending" className="text-[#F4EFE6] hover:text-black">{t('nav.trending')}</Link>
+            <Link to="/category" className="text-[#F4EFE6] hover:text-black">{t('nav.category')}</Link>
           </div>
         </div>
 
@@ -47,9 +49,9 @@ export const Navbar: React.FC = () => {
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden flex flex-col gap-4 mt-4 pt-4 border-t border-gray-300 font-semibold text-sm">
-          <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="text-[#F4EFE6] hover:text-black">Rekomendasi</Link>
-          <Link to="/trending" onClick={() => setIsMobileMenuOpen(false)} className="text-[#F4EFE6] hover:text-black">Trending</Link>
-          <Link to="/category" onClick={() => setIsMobileMenuOpen(false)} className="text-[#F4EFE6] hover:text-black">Kategori</Link>
+          <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="text-[#F4EFE6] hover:text-black">{t('nav.recommendation')}</Link>
+          <Link to="/trending" onClick={() => setIsMobileMenuOpen(false)} className="text-[#F4EFE6] hover:text-black">{t('nav.trending')}</Link>
+          <Link to="/category" onClick={() => setIsMobileMenuOpen(false)} className="text-[#F4EFE6] hover:text-black">{t('nav.category')}</Link>
         </div>
       )}
     </nav>

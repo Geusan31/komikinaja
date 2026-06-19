@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 import { fetchManga } from '../services/api';
 import { Edit2 } from 'lucide-react';
@@ -9,6 +10,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 export const Profile: React.FC = () => {
   const { user, logout, setRole } = useAuth();
+  const { language, toggleLanguage, t } = useLanguage();
   const navigate = useNavigate();
   const isAuthor = user?.role === 'author';
   const [activeTab, setActiveTab] = useState(isAuthor ? 'KOMIK' : 'FAVORIT');
@@ -17,8 +19,13 @@ export const Profile: React.FC = () => {
   useEffect(() => {
     // Fetch some dummy "favorites" or "my comics" using Jikan API
     const loadComics = async () => {
-      const data = await fetchManga(1, '', 8);
-      setComics(data.data);
+      try {
+        const data = await fetchManga(1, '', 8);
+        setComics(data?.data || []);
+      } catch (err) {
+        console.error("Error loading profile comics:", err);
+        setComics([]);
+      }
     };
     if (activeTab !== 'AKUN') {
       loadComics();
@@ -70,7 +77,7 @@ export const Profile: React.FC = () => {
                 activeTab !== 'AKUN' ? 'text-[#1F2544] border-b-4 border-[#1F2544]' : 'text-gray-500 hover:text-gray-800'
               }`}
             >
-              {isAuthor ? 'Komik' : 'Favorit'}
+              {isAuthor ? t('profile.comic') : t('profile.favorite')}
             </button>
             <button 
               onClick={() => setActiveTab('AKUN')}
@@ -78,13 +85,13 @@ export const Profile: React.FC = () => {
                 activeTab === 'AKUN' ? 'text-[#1F2544] border-b-4 border-[#1F2544]' : 'text-gray-500 hover:text-gray-800'
               }`}
             >
-              Akun
+              {t('profile.account')}
             </button>
           </div>
           
           {isAuthor && activeTab === 'KOMIK' && (
             <Link to="/add-comic" className="px-4 py-2 border-2 border-[#1F2544] text-[#1F2544] rounded-full text-sm font-bold hover:bg-[#1F2544] hover:text-white transition-colors mb-2">
-              + Tambah Komik Baru
+              {t('profile.addComic')}
             </Link>
           )}
         </div>
@@ -92,70 +99,73 @@ export const Profile: React.FC = () => {
         {/* Tab Content */}
         {activeTab === 'AKUN' ? (
           <div className="flex flex-col gap-6">
-            <AccountSection title="Login dengan">
+            <AccountSection title={t('profile.loginWith')}>
               <div className="flex items-center gap-2 text-[#1F2544] font-bold">
                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
                 {user?.name}
               </div>
             </AccountSection>
 
-            <AccountSection title="Nama Panggilan">
+            <AccountSection title={t('profile.nickname')}>
               <div className="flex justify-between items-center w-full text-sm font-bold text-[#1F2544]">
                 <span>{user?.name}</span>
                 <button className="px-4 py-1 border border-gray-400 rounded-full hover:bg-gray-200">Edit</button>
               </div>
             </AccountSection>
 
-            <AccountSection title="Pengaturan">
+            <AccountSection title={t('profile.settings')}>
               <div className="flex flex-col gap-4 w-full">
                 <div className="flex justify-between items-center border-b border-gray-300 pb-4">
                   <div className="flex flex-col">
                     <span className="font-bold text-[#1F2544]">Email</span>
                     <span className="text-sm text-gray-600">{user?.email}</span>
                   </div>
-                  <button className="px-4 py-1 border border-gray-400 rounded-full hover:bg-gray-200 text-sm font-bold">Ganti Email</button>
+                  <button className="px-4 py-1 border border-gray-400 rounded-full hover:bg-gray-200 text-sm font-bold">{t('profile.changeEmail')}</button>
                 </div>
 
                 <div className="flex justify-between items-center border-b border-gray-300 pb-4">
-                  <span className="font-medium text-gray-600">Notifikasi Komik Favorit</span>
+                  <span className="font-medium text-gray-600">{t('profile.notif')}</span>
                   <div className="w-12 h-6 bg-[#1F2544] rounded-full relative cursor-pointer">
                     <div className="w-4 h-4 bg-white rounded-full absolute top-1 right-1"></div>
                   </div>
                 </div>
                 
                 <div className="flex justify-between items-center border-b border-gray-300 pb-4">
-                  <span className="font-medium text-gray-600">Komentar Terbaik</span>
+                  <span className="font-medium text-gray-600">{t('profile.bestComment')}</span>
                   <div className="w-12 h-6 bg-[#1F2544] rounded-full relative cursor-pointer">
                     <div className="w-4 h-4 bg-white rounded-full absolute top-1 right-1"></div>
                   </div>
                 </div>
 
                 <div className="flex justify-between items-center border-b border-gray-300 pb-4">
-                  <span className="font-medium text-gray-600">Ganti Role ({isAuthor ? 'Author -> Reader' : 'Reader -> Author'})</span>
-                  <button onClick={handleChangeRole} className="px-4 py-1 border border-gray-400 rounded-full hover:bg-gray-200 text-sm font-bold">Ganti Role</button>
+                  <span className="font-medium text-gray-600">{t('profile.changeRole')} ({isAuthor ? 'Author -> Reader' : 'Reader -> Author'})</span>
+                  <button onClick={handleChangeRole} className="px-4 py-1 border border-gray-400 rounded-full hover:bg-gray-200 text-sm font-bold">{t('profile.changeRole')}</button>
                 </div>
 
-                <div className="flex justify-between items-center pt-2">
-                  <span className="font-medium text-gray-600">Pilih Bahasa</span>
-                  <span className="font-bold text-[#1F2544] text-sm">Bahasa Indonesia &gt;</span>
+                <div 
+                  className="flex justify-between items-center pt-2 cursor-pointer group"
+                  onClick={toggleLanguage}
+                >
+                  <span className="font-medium text-gray-600">{t('profile.chooseLanguage')}</span>
+                  <span className="font-bold text-[#1F2544] text-sm group-hover:underline">{language === 'id' ? 'Bahasa Indonesia' : 'English'} &gt;</span>
                 </div>
               </div>
             </AccountSection>
 
-            <AccountSection title="Kode Promosi">
+            <AccountSection title={t('profile.promo')}>
               <div className="flex flex-col gap-2 w-full md:w-1/2">
-                <span className="text-sm text-gray-600">Silahkan klik tombol di kanan untuk mengisi Kode Promosi</span>
+                <span className="text-sm text-gray-600">{t('profile.promoDesc')}</span>
               </div>
               <div className="w-full md:w-1/2 flex justify-end">
                 <button className="px-6 py-3 border border-gray-400 rounded-lg text-sm text-gray-500 w-full md:w-auto hover:bg-gray-200">
-                  Isi Kode Promosi
+                  {t('profile.fillPromo')}
                 </button>
               </div>
             </AccountSection>
 
             <div className="flex justify-center mt-8">
               <button onClick={handleLogout} className="px-8 py-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700">
-                Log Out
+                {t('profile.logout')}
               </button>
             </div>
           </div>

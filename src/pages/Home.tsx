@@ -150,28 +150,31 @@ export const Home: React.FC = () => {
 };
 
 // Sub-component for sections
-const Section: React.FC<{ title: string; mangas: any[] }> = ({ title, mangas }) => (
-  <div className="flex flex-col gap-6 text-left min-h-[200px]">
-    <h2 className="text-2xl font-bold font-heading text-[#1F2544]">{title}</h2>
-    {mangas.length === 0 ? (
-      <div className="animate-pulse flex gap-4 overflow-hidden">
-        {[1,2,3,4,5,6].map(i => <div key={i} className="w-40 h-60 bg-gray-300 rounded-md shrink-0"></div>)}
-      </div>
-    ) : (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {mangas.map((manga) => (
-          <Link to={`/comic/${manga.mal_id}`} key={manga.mal_id}>
-            <ComicCard 
-              title={manga.title}
-              cover={manga.images?.webp?.image_url || manga.images?.jpg?.image_url || "https://placehold.co/400x600"}
-              episode={manga.chapters ? `Chapters: ${manga.chapters}` : 'Ongoing'}
-              likes={(manga.score || 0).toString()}
-              views={(manga.members || 0).toLocaleString()}
-              isNew={manga.status === "Publishing"}
-            />
-          </Link>
-        ))}
-      </div>
-    )}
-  </div>
-);
+const Section: React.FC<{ title: string; mangas: any[] }> = ({ title, mangas }) => {
+  const safeMangas = mangas || [];
+  return (
+    <div className="flex flex-col gap-6 text-left min-h-[200px]">
+      <h2 className="text-2xl font-bold font-heading text-[#1F2544]">{title}</h2>
+      {safeMangas.length === 0 ? (
+        <div className="animate-pulse flex gap-4 overflow-hidden">
+          {[1,2,3,4,5,6].map(i => <div key={i} className="w-40 h-60 bg-gray-300 rounded-md shrink-0"></div>)}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {safeMangas.map((manga) => (
+            <Link to={`/comic/${manga.mal_id}`} key={manga.mal_id}>
+              <ComicCard 
+                title={manga.title}
+                cover={manga.images?.webp?.image_url || manga.images?.jpg?.image_url || "https://placehold.co/400x600"}
+                episode={manga.chapters ? `Chapters: ${manga.chapters}` : 'Ongoing'}
+                likes={(manga.score || 0).toString()}
+                views={(manga.members || 0).toLocaleString()}
+                isNew={manga.status === "Publishing"}
+              />
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
