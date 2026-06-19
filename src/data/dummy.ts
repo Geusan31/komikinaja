@@ -110,3 +110,36 @@ export const dummyComments = [
     time: "1 hari"
   }
 ];
+
+export const loginColumn1 = [
+  '/assets/Poster_2.jpeg',
+  '/assets/Poster_7.jpeg',
+  '/assets/Poster_8.jpeg',
+  '/assets/Poster_4.jpeg',
+  '/assets/Poster_2.jpeg',
+  '/assets/Poster_7.jpeg',
+  '/assets/Poster_8.jpeg',
+  '/assets/Poster_4.jpeg',
+];
+
+export const loginColumn2 = [
+  '/assets/Poster_3.jpeg',
+  '/assets/Poster_6.jpeg',
+  '/assets/Poster_5.jpeg',
+  '/assets/Poster_9.jpeg',
+  '/assets/Poster_3.jpeg',
+  '/assets/Poster_6.jpeg',
+  '/assets/Poster_5.jpeg',
+  '/assets/Poster_9.jpeg',
+];
+
+export const loginColumn3 = [
+  '/assets/Poster_1.jpeg',
+  '/assets/Poster_10.jpeg',
+  '/assets/Poster_11.jpeg',
+  '/assets/Poster_12.jpeg',
+  '/assets/Poster_13.jpeg',
+  '/assets/Poster_1.jpeg',
+  '/assets/Poster_10.jpeg',
+  '/assets/Poster_11.jpeg',
+];

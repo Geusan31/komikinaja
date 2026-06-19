@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
-import { mangas } from '../data/dummy';
+import { loginColumn1, loginColumn2, loginColumn3 } from '../data/dummy';
 
 export const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -79,20 +79,20 @@ export const Register: React.FC = () => {
       </div>
 
       {/* Right Image Side */}
-      <div className="hidden lg:grid w-1/2 grid-cols-3 gap-4 p-8 overflow-hidden max-h-screen bg-[#EAE3D2]">
-        <div className="flex flex-col gap-4 animate-marquee-reverse">
-          {mangas.slice(0, 4).map((manga) => (
-            <img key={manga.id} src={manga.cover} alt={manga.title} className="w-full h-auto rounded-lg shadow-md" />
+      <div className="hidden lg:grid w-1/2 grid-cols-3 gap-4 p-4 overflow-hidden max-h-screen bg-[#EAE3D2] relative">
+        <div className="flex flex-col gap-4 animate-slide-up" style={{ animationDuration: '35s' }}>
+          {loginColumn1.map((src, idx) => (
+            <img key={`c1-${idx}`} src={src} alt="Poster" className="w-full h-auto rounded-xl shadow-lg object-cover" />
           ))}
         </div>
-        <div className="flex flex-col gap-4 animate-marquee">
-          {mangas.slice(4, 8).map((manga) => (
-            <img key={manga.id} src={manga.cover} alt={manga.title} className="w-full h-auto rounded-lg shadow-md" />
+        <div className="flex flex-col gap-4 animate-slide-down" style={{ animationDuration: '40s' }}>
+          {loginColumn2.map((src, idx) => (
+            <img key={`c2-${idx}`} src={src} alt="Poster" className="w-full h-auto rounded-xl shadow-lg object-cover" />
           ))}
         </div>
-        <div className="flex flex-col gap-4 animate-marquee-reverse">
-          {mangas.slice(2, 6).map((manga) => (
-            <img key={manga.id} src={manga.cover} alt={manga.title} className="w-full h-auto rounded-lg shadow-md" />
+        <div className="flex flex-col gap-4 animate-slide-up" style={{ animationDuration: '38s' }}>
+          {loginColumn3.map((src, idx) => (
+            <img key={`c3-${idx}`} src={src} alt="Poster" className="w-full h-auto rounded-xl shadow-lg object-cover" />
           ))}
         </div>
       </div>
