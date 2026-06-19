@@ -57,12 +57,29 @@ export const mangas = [
   }
 ];
 
-export const heroBanner = {
-  title: "Selamat datang di KomikinAja, Omniscient Reader's Viewpoint!",
-  description: "Cuma aku satu-satunya orang yang tahu akhir dunia ini. Karena satu jalan ceritaku, di sanalah dunia terhenti dan tak berjalan...",
-  cover: "https://placehold.co/800x400/1F2544/FFFFFF/png?text=Omniscient+Reader",
-  url: "/comic/1"
-};
+export const heroBanners = [
+  {
+    id: 1,
+    title: "Selamat datang di KomikinAja, Omniscient Reader's Viewpoint!",
+    description: "Cuma aku satu-satunya orang yang tahu akhir dunia ini. Karena satu jalan ceritaku, di sanalah dunia terhenti dan tak berjalan...",
+    cover: "https://placehold.co/800x400/1F2544/FFFFFF/png?text=Omniscient+Reader",
+    url: "/comic/1"
+  },
+  {
+    id: 2,
+    title: "Solo Leveling: Bangkitnya Hunter Terkuat",
+    description: "Pertarungan terdahsyat Sung Jin-Woo dimulai. Manhwa aksi fantasi nomor 1 yang tak boleh dilewatkan untuk dibaca hari ini!",
+    cover: "https://placehold.co/800x400/212844/F4EFE6/png?text=Solo+Leveling",
+    url: "/comic/2"
+  },
+  {
+    id: 3,
+    title: "The Beginning After The End",
+    description: "Kisah reinkarnasi Raja Grey ke dunia sihir penuh misteri. Mulai dari awal dengan kekuatan luar biasa untuk melindungi orang tersayang.",
+    cover: "https://placehold.co/800x400/1F2544/FFFFFF/png?text=TBATE",
+    url: "/comic/3"
+  }
+];
 
 // Dummy episodes for reading mode since API doesn't provide them
 export const dummyEpisodes = Array.from({ length: 10 }, (_, i) => ({

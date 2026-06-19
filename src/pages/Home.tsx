@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { ComicCard } from '../components/ComicCard';
-import { heroBanner } from '../data/dummy';
+import { heroBanners } from '../data/dummy';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { fetchManga, fetchTopManga } from '../services/api';
@@ -13,7 +13,24 @@ export const Home: React.FC = () => {
   const [shounen, setShounen] = useState<any[]>([]);
   const [fantasi, setFantasi] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentBanner, setCurrentBanner] = useState(0);
   const navigate = useNavigate();
+
+  // Auto-slide banner
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentBanner((prev) => (prev === heroBanners.length - 1 ? 0 : prev + 1));
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const nextBanner = () => {
+    setCurrentBanner((prev) => (prev === heroBanners.length - 1 ? 0 : prev + 1));
+  };
+
+  const prevBanner = () => {
+    setCurrentBanner((prev) => (prev === 0 ? heroBanners.length - 1 : prev - 1));
+  };
 
   useEffect(() => {
     const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -58,36 +75,47 @@ export const Home: React.FC = () => {
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-12">
         {/* Hero Section */}
-        <div className="relative w-full rounded-3xl overflow-hidden bg-[#1F2544] text-white p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="md:w-1/2 flex flex-col items-start text-left z-10">
-            <h1 className="text-3xl md:text-4xl font-bold font-heading mb-4 leading-tight">
-              {heroBanner.title}
+        <div className="relative w-full rounded-3xl overflow-hidden bg-[#1F2544] text-white p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 min-h-[450px]">
+          <div className="md:w-1/2 flex flex-col items-start text-left z-10 animate-fade-in" key={`text-${currentBanner}`}>
+            <h1 className="text-3xl md:text-4xl font-bold font-heading mb-4 leading-tight drop-shadow-md">
+              {heroBanners[currentBanner].title}
             </h1>
-            <p className="text-gray-300 mb-8 max-w-md line-clamp-3">
-              {heroBanner.description}
+            <p className="text-gray-300 mb-8 max-w-md line-clamp-3 drop-shadow">
+              {heroBanners[currentBanner].description}
             </p>
-            <Link to={heroBanner.url} className="bg-[#EAE3D2] text-[#1F2544] px-6 py-3 rounded-full font-bold hover:bg-white transition-colors">
+            <Link to={heroBanners[currentBanner].url} className="bg-[#EAE3D2] text-[#1F2544] px-6 py-3 rounded-full font-bold hover:bg-white transition-colors">
               Lihat Komik
             </Link>
           </div>
           
-          {/* Hero Carousel Dummy */}
+          {/* Hero Carousel Display */}
           <div className="md:w-1/2 flex items-center justify-center gap-4 z-10">
-            <button className="p-2 hover:bg-white/10 rounded-full transition-colors hidden sm:block">
+            <button onClick={prevBanner} className="p-2 hover:bg-white/20 rounded-full transition-colors hidden sm:block bg-black/20 backdrop-blur-sm">
               <ChevronLeft size={24} />
             </button>
-            <div className="relative w-64 h-96 rounded-xl overflow-hidden shadow-2xl">
-              <img src={heroBanner.cover} alt="Hero Cover" className="w-full h-full object-cover" />
+            <div className="relative w-64 h-96 rounded-xl overflow-hidden shadow-2xl" key={`img-${currentBanner}`}>
+              <img src={heroBanners[currentBanner].cover} alt="Hero Cover" className="w-full h-full object-cover animate-fade-in" />
             </div>
-            <button className="p-2 hover:bg-white/10 rounded-full transition-colors hidden sm:block">
+            <button onClick={nextBanner} className="p-2 hover:bg-white/20 rounded-full transition-colors hidden sm:block bg-black/20 backdrop-blur-sm">
               <ChevronRight size={24} />
             </button>
           </div>
 
+          {/* Dots Indicator */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+            {heroBanners.map((_, idx) => (
+              <button 
+                key={idx}
+                onClick={() => setCurrentBanner(idx)}
+                className={`w-3 h-3 rounded-full transition-all ${currentBanner === idx ? 'bg-white scale-125' : 'bg-white/40 hover:bg-white/60'}`}
+              />
+            ))}
+          </div>
+
           {/* Decorative background blur */}
           <div 
-            className="absolute top-0 right-0 w-full md:w-2/3 h-full opacity-30 blur-3xl scale-150 pointer-events-none"
-            style={{ backgroundImage: `url(${heroBanner.cover})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+            className="absolute top-0 right-0 w-full md:w-2/3 h-full opacity-40 blur-3xl scale-150 pointer-events-none transition-all duration-1000 ease-in-out"
+            style={{ backgroundImage: `url(${heroBanners[currentBanner].cover})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
           />
         </div>
 
