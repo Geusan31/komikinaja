@@ -14,6 +14,11 @@ const getFallbackMangas = () => {
   }));
 };
 
+const filterBannedMangas = (mangas: any[]) => {
+  const bannedIds = [71];
+  return mangas.filter(m => !bannedIds.includes(m.mal_id));
+};
+
 const fetchWithRetry = async (url: string, retries = 3, baseDelay = 1000): Promise<any> => {
   for (let i = 0; i < retries; i++) {
     try {
@@ -39,22 +44,22 @@ export const fetchManga = async (page = 1, query = '', limit = 24, genreId = '')
     const genreParam = genreId ? `&genres=${genreId}` : '';
     const data = await fetchWithRetry(`${BASE_URL}/manga?page=${page}&limit=${limit}${searchParam}${genreParam}&order_by=popularity&sort=asc&sfw=true&genres_exclude=9,12,26,28,43,49,58`);
     return {
-      data: data.data || getFallbackMangas(),
+      data: filterBannedMangas(data.data || getFallbackMangas()),
       pagination: data.pagination || { has_next_page: false }
     };
   } catch (error) {
     console.error("API error, using fallback data:", error);
-    return { data: getFallbackMangas(), pagination: { has_next_page: false } };
+    return { data: filterBannedMangas(getFallbackMangas()), pagination: { has_next_page: false } };
   }
 };
 
 export const fetchTopManga = async (limit = 10) => {
   try {
     const data = await fetchWithRetry(`${BASE_URL}/top/manga?limit=${limit}&sfw=true&genres_exclude=9,12,26,28,43,49,58`);
-    return data.data || getFallbackMangas();
+    return filterBannedMangas(data.data || getFallbackMangas());
   } catch (error) {
     console.error("API error, using fallback data:", error);
-    return getFallbackMangas();
+    return filterBannedMangas(getFallbackMangas());
   }
 };
 
