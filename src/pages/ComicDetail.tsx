@@ -75,6 +75,16 @@ export const ComicDetail: React.FC = () => {
           Author: {manga.authors?.map((a: any) => a.name).join(', ') || 'Unknown'}
         </p>
 
+        {manga.genres && manga.genres.length > 0 && (
+          <div className="flex flex-wrap justify-center gap-2 mb-6">
+            {manga.genres.map((g: any) => (
+              <span key={g.mal_id} className="px-3 py-1 bg-[#1F2544]/10 text-[#1F2544] text-xs font-bold rounded-full border border-[#1F2544]/20">
+                {g.name}
+              </span>
+            ))}
+          </div>
+        )}
+
         <div className="flex items-center gap-6 mb-8 text-sm font-semibold text-gray-700">
           <div className="flex items-center gap-2">
             <Eye size={18} className="text-[#1F2544]" />

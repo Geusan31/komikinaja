@@ -22,9 +22,22 @@ export const Category: React.FC = () => {
 
   const loadMangas = async (currentPage: number, append = false) => {
     setLoading(true);
-    // In Jikan API, we can search by genre ID or just query text
-    const query = activeCategory === "ALL" ? searchQuery : `${searchQuery} ${activeCategory}`;
-    const data = await fetchManga(currentPage, query, 24);
+    
+    // Map UI category to Jikan Genre ID for accurate filtering
+    const genreMap: Record<string, string> = {
+      "DRAMA": "8",
+      "FANTASI": "10",
+      "KERAJAAN": "13", // Historical
+      "ACTION": "1",
+      "ROMANCE": "22",
+      "SLICE OF LIFE": "36",
+      "HOROR": "14",
+      "THRILLER": "41" // Suspense
+    };
+    
+    const genreId = activeCategory === "ALL" ? "" : genreMap[activeCategory] || "";
+    
+    const data = await fetchManga(currentPage, searchQuery, 24, genreId);
     
     if (append) {
       setMangas(prev => [...prev, ...data.data]);

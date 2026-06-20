@@ -39,20 +39,20 @@ export const mangas = [
   },
   {
     id: 3,
-    title: "Cry, or Better Yet, Beg",
-    episode: "Episode 72",
-    likes: "4.120",
-    views: "489K",
-    cover: "https://placehold.co/400x600/1F2544/FFFFFF/png?text=Cry+or+Better+Yet+Beg",
+    title: "Naruto",
+    episode: "Episode 700",
+    likes: "9.999",
+    views: "1M",
+    cover: "https://placehold.co/400x600/1F2544/FFFFFF/png?text=Naruto",
     isNew: false
   },
   {
     id: 4,
-    title: "Killer Peter",
-    episode: "Episode 402",
-    likes: "4.120",
-    views: "489K",
-    cover: "https://placehold.co/400x600/1F2544/FFFFFF/png?text=Killer+Peter",
+    title: "One Piece",
+    episode: "Episode 1100",
+    likes: "10.000",
+    views: "2M",
+    cover: "https://placehold.co/400x600/1F2544/FFFFFF/png?text=One+Piece",
     isNew: false
   }
 ];
