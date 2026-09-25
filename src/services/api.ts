@@ -1,19 +1,4 @@
-import { mangas as dummyMangas } from '../data/dummy';
-
 const BASE_URL = 'https://kitsu.io/api/edge';
-
-const getFallbackMangas = () => {
-  return dummyMangas.map(m => ({
-    mal_id: m.id,
-    title: m.title,
-    images: { webp: { image_url: m.cover }, jpg: { image_url: m.cover } },
-    chapters: m.episode,
-    score: m.likes,
-    members: m.views,
-    status: m.isNew ? "Publishing" : "Finished",
-    synopsis: "No synopsis available."
-  }));
-};
 
 const mapKitsuToAppFormat = (kitsuItem: any) => {
   return {
@@ -109,7 +94,7 @@ export const fetchMangaDetail = async (id: string | number) => {
   }
 };
 
-export const fetchMangaPictures = async (id: string | number) => {
+export const fetchMangaPictures = async (_id: string | number) => {
   try {
     // Kitsu doesn't have a direct equivalent to Jikan's pictures array
     // Returning empty array will trigger the placeholder fallback logic in ReadingMode.tsx
