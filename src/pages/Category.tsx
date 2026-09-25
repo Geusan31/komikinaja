@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from '../components/Navbar';
-import { ComicCard } from '../components/ComicCard';
+import { ComicCard, ComicSkeleton } from '../components/ComicCard';
 import { categories } from '../data/dummy';
 import { Search } from 'lucide-react';
 import { fetchManga } from '../services/api';
@@ -17,27 +17,37 @@ export const Category: React.FC = () => {
   const [mangas, setMangas] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState(initialQuery);
 
-  const loadMangas = async (currentPage: number, append = false) => {
+  const loadMangas = async (currentPage: number, append = false, query?: string) => {
     setLoading(true);
     
-    // Map UI category to Jikan Genre ID for accurate filtering
+    const currentQuery = query !== undefined ? query : searchQuery;
+
+    // Map UI category to Kitsu Category slugs for accurate filtering
     const genreMap: Record<string, string> = {
-      "DRAMA": "8",
-      "FANTASI": "10",
-      "KERAJAAN": "13", // Historical
-      "ACTION": "1",
-      "ROMANCE": "22",
-      "SLICE OF LIFE": "36",
-      "HOROR": "14",
-      "THRILLER": "41" // Suspense
+      "DRAMA": "drama",
+      "FANTASI": "fantasy",
+      "KERAJAAN": "historical",
+      "ACTION": "action",
+      "ROMANCE": "romance",
+      "SLICE OF LIFE": "slice-of-life",
+      "HOROR": "horror",
+      "THRILLER": "thriller"
     };
     
     const genreId = activeCategory === "ALL" ? "" : genreMap[activeCategory] || "";
     
-    const data = await fetchManga(currentPage, searchQuery, 24, genreId);
+    // Map UI sort to Kitsu sort slugs
+    const sortMap: Record<string, string> = {
+      "Popularitas": "-userCount",
+      "Berdasarkan jumlah like": "-averageRating",
+      "Berdasarkan tanggal": "-startDate"
+    };
+    const sortOrder = sortMap[activeSort] || "-userCount";
+    
+    const data = await fetchManga(currentPage, currentQuery, 20, genreId, sortOrder);
     
     if (append) {
       setMangas(prev => [...prev, ...data.data]);
@@ -51,7 +61,8 @@ export const Category: React.FC = () => {
 
   useEffect(() => {
     setPage(1);
-    loadMangas(1, false);
+    loadMangas(1, false, searchQuery);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeCategory, activeSort]);
 
   // Handle URL query changes
@@ -59,15 +70,16 @@ export const Category: React.FC = () => {
     if (initialQuery !== searchQuery) {
       setSearchQuery(initialQuery);
       setPage(1);
-      loadMangas(1, false);
+      loadMangas(1, false, initialQuery);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialQuery]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setSearchParams(searchQuery ? { q: searchQuery } : {});
     setPage(1);
-    loadMangas(1, false);
+    loadMangas(1, false, searchQuery);
   };
 
   const handleLoadMore = () => {
@@ -134,14 +146,14 @@ export const Category: React.FC = () => {
 
         {/* Content */}
         {loading ? (
-          <div className="flex justify-center py-20 text-[#1F2544] font-bold text-xl animate-pulse">
-            Loading...
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-8 pb-12">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(i => <ComicSkeleton key={i} />)}
           </div>
         ) : mangas.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 gap-2 text-center">
             <img src={emptyIllustration} alt="Not Found" className="w-80 h-80 object-contain drop-shadow-lg mb-10" />
             <h3 className="text-2xl font-bold text-gray-500 mt-[-20px]">
-              '{searchQuery || "Manga"}' Not Found
+              '{searchParams.get('q') || "Manga"}' Not Found
             </h3>
           </div>
         ) : (

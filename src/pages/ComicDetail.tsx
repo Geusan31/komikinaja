@@ -25,8 +25,29 @@ export const ComicDetail: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F4EFE6] flex items-center justify-center">
-        <p className="text-xl font-bold animate-pulse text-[#1F2544]">Loading Manga...</p>
+      <div className="min-h-screen bg-[#F4EFE6] flex flex-col text-left">
+        <Navbar />
+        {/* Skeleton Hero Header */}
+        <div className="w-full h-64 md:h-80 bg-gray-300 animate-pulse"></div>
+        <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 -mt-32 relative z-10 flex flex-col items-center animate-pulse">
+          {/* Skeleton Cover */}
+          <div className="w-48 h-72 rounded-xl bg-gray-400 mb-6 border-4 border-[#F4EFE6]"></div>
+          {/* Skeleton Title & Info */}
+          <div className="w-3/4 h-10 bg-gray-300 rounded mb-4"></div>
+          <div className="w-1/2 h-6 bg-gray-300 rounded mb-8"></div>
+          
+          <div className="flex gap-2 mb-6">
+            <div className="w-20 h-6 bg-gray-300 rounded-full"></div>
+            <div className="w-20 h-6 bg-gray-300 rounded-full"></div>
+            <div className="w-20 h-6 bg-gray-300 rounded-full"></div>
+          </div>
+
+          <div className="w-full max-w-3xl flex flex-col gap-3 mb-8">
+            <div className="w-full h-4 bg-gray-300 rounded"></div>
+            <div className="w-full h-4 bg-gray-300 rounded"></div>
+            <div className="w-3/4 h-4 bg-gray-300 rounded"></div>
+          </div>
+        </main>
       </div>
     );
   }

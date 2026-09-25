@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
-import { ComicCard } from '../components/ComicCard';
+import { ComicCard, ComicSkeleton } from '../components/ComicCard';
 import { fetchTopManga } from '../services/api';
 import { Link } from 'react-router-dom';
+import emptyIllustration from '../assets/empty_ilustration.png';
 
 export const Trending: React.FC = () => {
   const [trendingMangas, setTrendingMangas] = useState<any[]>([]);
@@ -11,7 +12,7 @@ export const Trending: React.FC = () => {
 
   useEffect(() => {
     const loadTrending = async () => {
-      const data = await fetchTopManga(24);
+      const data = await fetchTopManga(20);
       setTrendingMangas(data);
       setLoading(false);
     };
@@ -29,8 +30,15 @@ export const Trending: React.FC = () => {
         </div>
 
         {loading ? (
-          <div className="flex justify-center items-center py-20">
-            <p className="text-gray-500 font-bold animate-pulse">Loading Trending Manga...</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-8 pb-12">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(i => <ComicSkeleton key={i} />)}
+          </div>
+        ) : trendingMangas.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 gap-2 text-center">
+            <img src={emptyIllustration} alt="Not Found" className="w-80 h-80 object-contain drop-shadow-lg mb-10" />
+            <h3 className="text-2xl font-bold text-gray-500 mt-[-20px]">
+              Belum ada data komik trending.
+            </h3>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-8 pb-12">
@@ -38,7 +46,7 @@ export const Trending: React.FC = () => {
               <Link to={`/comic/${manga.mal_id}`} key={manga.mal_id}>
                 <ComicCard 
                   title={manga.title}
-                  cover={manga.images.webp.image_url || manga.images.jpg.image_url}
+                  cover={manga.images?.webp?.image_url || manga.images?.jpg?.image_url || ''}
                   episode={manga.chapters ? `Chapters: ${manga.chapters}` : 'Ongoing'}
                   likes={(manga.score || 0).toString()}
                   views={(manga.members || 0).toLocaleString()}

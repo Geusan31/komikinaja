@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
-import { ComicCard } from '../components/ComicCard';
+import { ComicCard, ComicSkeleton } from '../components/ComicCard';
 import { heroBanners } from '../data/dummy';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -14,22 +14,27 @@ export const Home: React.FC = () => {
   const [fantasi, setFantasi] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentBanner, setCurrentBanner] = useState(0);
+  const [banners, setBanners] = useState(heroBanners);
+  const [loadingState, setLoadingState] = useState({ rec: true, update: true, shounen: true, fantasi: true });
   const navigate = useNavigate();
 
   // Auto-slide banner
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentBanner((prev) => (prev === heroBanners.length - 1 ? 0 : prev + 1));
+      setBanners(prev => {
+        setCurrentBanner((c) => (c === prev.length - 1 ? 0 : c + 1));
+        return prev;
+      });
     }, 5000);
     return () => clearInterval(timer);
   }, []);
 
   const nextBanner = () => {
-    setCurrentBanner((prev) => (prev === heroBanners.length - 1 ? 0 : prev + 1));
+    setCurrentBanner((prev) => (prev === banners.length - 1 ? 0 : prev + 1));
   };
 
   const prevBanner = () => {
-    setCurrentBanner((prev) => (prev === 0 ? heroBanners.length - 1 : prev - 1));
+    setCurrentBanner((prev) => (prev === 0 ? banners.length - 1 : prev - 1));
   };
 
   useEffect(() => {
@@ -40,21 +45,39 @@ export const Home: React.FC = () => {
         // Rekomendasi
         const rec = await fetchTopManga(6);
         setRekomendasi(rec);
-        await sleep(1000); // Increased delay
+        setLoadingState(s => ({ ...s, rec: false }));
+
+        // Build dynamic banners from top manga with real cover images
+        if (rec && rec.length >= 3) {
+          const dynamicBanners = rec.slice(0, 3).map((manga: any, idx: number) => ({
+            id: idx + 1,
+            title: manga.title,
+            description: manga.synopsis || "Komik populer yang wajib kamu baca di KomikinAja!",
+            cover: manga.images?.webp?.large_image_url || manga.images?.webp?.image_url || manga.images?.jpg?.image_url || heroBanners[idx]?.cover,
+            url: `/comic/${manga.mal_id}`
+          }));
+          setBanners(dynamicBanners);
+          setCurrentBanner(0);
+        }
+
+        await sleep(1000);
 
         // Terakhir update
         const update = await fetchManga(1, '', 6);
         setTerakhirUpdate(update.data);
+        setLoadingState(s => ({ ...s, update: false }));
         await sleep(1000);
 
         // Shounen
         const shounenData = await fetchManga(1, 'shounen', 6);
         setShounen(shounenData.data);
+        setLoadingState(s => ({ ...s, shounen: false }));
         await sleep(1000);
 
         // Fantasi
         const fantasiData = await fetchManga(1, 'fantasy', 6);
         setFantasi(fantasiData.data);
+        setLoadingState(s => ({ ...s, fantasi: false }));
       } catch (error) {
         console.error("Error loading home data:", error);
       }
@@ -78,12 +101,12 @@ export const Home: React.FC = () => {
         <div className="relative w-full rounded-3xl overflow-hidden bg-[#1F2544] text-white p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 min-h-[450px]">
           <div className="md:w-1/2 flex flex-col items-start text-left z-10 animate-fade-in" key={`text-${currentBanner}`}>
             <h1 className="text-3xl md:text-4xl font-bold font-heading mb-4 leading-tight drop-shadow-md">
-              {heroBanners[currentBanner].title}
+              {banners[currentBanner]?.title}
             </h1>
             <p className="text-gray-300 mb-8 max-w-md line-clamp-3 drop-shadow">
-              {heroBanners[currentBanner].description}
+              {banners[currentBanner]?.description}
             </p>
-            <Link to={heroBanners[currentBanner].url} className="bg-[#EAE3D2] text-[#1F2544] px-6 py-3 rounded-full font-bold hover:bg-white transition-colors">
+            <Link to={banners[currentBanner]?.url || '#'} className="bg-[#EAE3D2] text-[#1F2544] px-6 py-3 rounded-full font-bold hover:bg-white transition-colors">
               Lihat Komik
             </Link>
           </div>
@@ -94,7 +117,7 @@ export const Home: React.FC = () => {
               <ChevronLeft size={24} />
             </button>
             <div className="relative w-64 h-96 rounded-xl overflow-hidden shadow-2xl" key={`img-${currentBanner}`}>
-              <img src={heroBanners[currentBanner].cover} alt="Hero Cover" className="w-full h-full object-cover animate-fade-in" />
+              <img src={banners[currentBanner]?.cover} alt="Hero Cover" className="w-full h-full object-cover animate-fade-in" />
             </div>
             <button onClick={nextBanner} className="p-2 hover:bg-white/20 rounded-full transition-colors hidden sm:block bg-black/20 backdrop-blur-sm">
               <ChevronRight size={24} />
@@ -103,7 +126,7 @@ export const Home: React.FC = () => {
 
           {/* Dots Indicator */}
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-            {heroBanners.map((_, idx) => (
+            {banners.map((_, idx) => (
               <button 
                 key={idx}
                 onClick={() => setCurrentBanner(idx)}
@@ -115,7 +138,7 @@ export const Home: React.FC = () => {
           {/* Decorative background blur */}
           <div 
             className="absolute top-0 right-0 w-full md:w-2/3 h-full opacity-40 blur-3xl scale-150 pointer-events-none transition-all duration-1000 ease-in-out"
-            style={{ backgroundImage: `url(${heroBanners[currentBanner].cover})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+            style={{ backgroundImage: `url(${banners[currentBanner]?.cover})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
           />
         </div>
 
@@ -132,10 +155,10 @@ export const Home: React.FC = () => {
         </form>
 
         {/* Sections */}
-        <Section title="Rekomendasi Untuk kamu!" mangas={rekomendasi} />
-        <Section title="Terakhir Update" mangas={terakhirUpdate} />
-        <Section title="Shounen Manga Top 10" mangas={shounen} />
-        <Section title="Fantasi Manga Top 10" mangas={fantasi} />
+        <Section title="Rekomendasi Untuk kamu!" mangas={rekomendasi} loading={loadingState.rec} />
+        <Section title="Terakhir Update" mangas={terakhirUpdate} loading={loadingState.update} />
+        <Section title="Shounen Manga Top 10" mangas={shounen} loading={loadingState.shounen} />
+        <Section title="Fantasi Manga Top 10" mangas={fantasi} loading={loadingState.fantasi} />
 
         <div className="flex justify-center mt-4">
           <Link to="/category" className="text-[#1F2544] font-bold hover:underline flex items-center gap-1">
@@ -150,22 +173,23 @@ export const Home: React.FC = () => {
 };
 
 // Sub-component for sections
-const Section: React.FC<{ title: string; mangas: any[] }> = ({ title, mangas }) => {
-  const safeMangas = mangas || [];
+const Section: React.FC<{ title: string; mangas: any[]; loading?: boolean }> = ({ title, mangas, loading = false }) => {
   return (
     <div className="flex flex-col gap-6 text-left min-h-[200px]">
       <h2 className="text-2xl font-bold font-heading text-[#1F2544]">{title}</h2>
-      {safeMangas.length === 0 ? (
-        <div className="animate-pulse flex gap-4 overflow-hidden">
-          {[1,2,3,4,5,6].map(i => <div key={i} className="w-40 h-60 bg-gray-300 rounded-md shrink-0"></div>)}
+      {loading ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {[1,2,3,4,5,6].map(i => <ComicSkeleton key={i} />)}
         </div>
+      ) : mangas.length === 0 ? (
+        <p className="text-gray-500 text-sm">Tidak ada data tersedia.</p>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {safeMangas.map((manga) => (
+          {mangas.map((manga) => (
             <Link to={`/comic/${manga.mal_id}`} key={manga.mal_id}>
               <ComicCard 
                 title={manga.title}
-                cover={manga.images?.webp?.image_url || manga.images?.jpg?.image_url || "https://placehold.co/400x600"}
+                cover={manga.images?.webp?.image_url || manga.images?.jpg?.image_url || ''}
                 episode={manga.chapters ? `Chapters: ${manga.chapters}` : 'Ongoing'}
                 likes={(manga.score || 0).toString()}
                 views={(manga.members || 0).toLocaleString()}

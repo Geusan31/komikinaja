@@ -26,9 +26,9 @@ export const Navbar: React.FC = () => {
           </Link>
           
           <div className="hidden md:flex items-center gap-8 font-semibold text-sm">
-            <Link to="/" className="text-[#F4EFE6] hover:text-black">{t('nav.recommendation')}</Link>
-            <Link to="/trending" className="text-[#F4EFE6] hover:text-black">{t('nav.trending')}</Link>
-            <Link to="/category" className="text-[#F4EFE6] hover:text-black">{t('nav.category')}</Link>
+            <Link to="/" className="text-[#F4EFE6] hover:text-amber-100">{t('nav.recommendation')}</Link>
+            <Link to="/trending" className="text-[#F4EFE6] hover:text-amber-100">{t('nav.trending')}</Link>
+            <Link to="/category" className="text-[#F4EFE6] hover:text-amber-100">{t('nav.category')}</Link>
           </div>
         </div>
 

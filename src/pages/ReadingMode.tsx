@@ -19,13 +19,13 @@ export const ReadingMode: React.FC = () => {
         
         const pics = await fetchMangaPictures(id);
         // Fallback to placeholders if no pictures available from API
-        if (pics.length > 0) {
-          setPages(pics.map((p: any) => p.jpg.image_url));
+        if (pics && pics.length > 0) {
+          setPages(pics.map((p: any) => p.jpg?.image_url || p));
         } else {
           setPages([
-            `https://placehold.co/800x1200/1F2544/FFFFFF/png?text=${encodeURIComponent(data?.title || 'Comic')}+Page+1`,
-            `https://placehold.co/800x1200/1F2544/FFFFFF/png?text=${encodeURIComponent(data?.title || 'Comic')}+Page+2`,
-            `https://placehold.co/800x1200/1F2544/FFFFFF/png?text=${encodeURIComponent(data?.title || 'Comic')}+Page+3`,
+            `https://dummyimage.com/800x1200/1F2544/FFFFFF.png&text=${encodeURIComponent(data?.title || 'Comic')}+Page+1`,
+            `https://dummyimage.com/800x1200/1F2544/FFFFFF.png&text=${encodeURIComponent(data?.title || 'Comic')}+Page+2`,
+            `https://dummyimage.com/800x1200/1F2544/FFFFFF.png&text=${encodeURIComponent(data?.title || 'Comic')}+Page+3`,
           ]);
         }
       }
@@ -61,14 +61,21 @@ export const ReadingMode: React.FC = () => {
           className="flex flex-col items-center transition-all duration-300 origin-top" 
           style={{ width: `${zoomLevel}%`, maxWidth: zoomLevel > 100 ? 'none' : '48rem' }}
         >
-          {pages.map((page, idx) => (
-            <img 
-              key={idx} 
-              src={page} 
-              alt={`Page ${idx + 1}`} 
-              className="w-full h-auto object-contain bg-black"
-            />
-          ))}
+          {pages.length === 0 ? (
+            <div className="w-full max-w-2xl flex flex-col gap-4 p-4 animate-pulse mt-8">
+              <div className="w-full h-screen bg-gray-800 rounded-lg"></div>
+              <div className="w-full h-screen bg-gray-800 rounded-lg"></div>
+            </div>
+          ) : (
+            pages.map((page, idx) => (
+              <img 
+                key={idx} 
+                src={page} 
+                alt={`Page ${idx + 1}`} 
+                className="w-full h-auto object-contain bg-black"
+              />
+            ))
+          )}
         </div>
       </div>
 
