@@ -25,13 +25,13 @@ export const ComicDetail: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F4EFE6] flex flex-col text-left">
+      <div className="min-h-screen bg-background flex flex-col text-left">
         <Navbar />
         {/* Skeleton Hero Header */}
         <div className="w-full h-64 md:h-80 bg-gray-300 animate-pulse"></div>
         <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 -mt-32 relative z-10 flex flex-col items-center animate-pulse">
           {/* Skeleton Cover */}
-          <div className="w-48 h-72 rounded-xl bg-gray-400 mb-6 border-4 border-[#F4EFE6]"></div>
+          <div className="w-48 h-72 rounded-xl bg-gray-400 mb-6 border-4 border-background"></div>
           {/* Skeleton Title & Info */}
           <div className="w-3/4 h-10 bg-gray-300 rounded mb-4"></div>
           <div className="w-1/2 h-6 bg-gray-300 rounded mb-8"></div>
@@ -54,9 +54,9 @@ export const ComicDetail: React.FC = () => {
 
   if (!manga) {
     return (
-      <div className="min-h-screen bg-[#F4EFE6] flex items-center justify-center flex-col gap-4">
+      <div className="min-h-screen bg-background flex items-center justify-center flex-col gap-4">
         <p className="text-xl font-bold text-red-500">Manga tidak ditemukan.</p>
-        <button onClick={() => navigate(-1)} className="px-4 py-2 bg-[#1F2544] text-white rounded">Kembali</button>
+        <button onClick={() => navigate(-1)} className="px-4 py-2 bg-primary text-white rounded">Kembali</button>
       </div>
     );
   }
@@ -64,11 +64,11 @@ export const ComicDetail: React.FC = () => {
   const coverUrl = manga.images?.webp?.large_image_url || manga.images?.jpg?.large_image_url || "https://placehold.co/400x600";
 
   return (
-    <div className="min-h-screen bg-[#F4EFE6] flex flex-col text-left">
+    <div className="min-h-screen bg-background flex flex-col text-left">
       <Navbar />
 
       {/* Hero Header */}
-      <div className="w-full h-64 md:h-80 relative overflow-hidden bg-[#1F2544]">
+      <div className="w-full h-64 md:h-80 relative overflow-hidden bg-primary">
         <img 
           src={coverUrl} 
           alt="Background" 
@@ -84,12 +84,12 @@ export const ComicDetail: React.FC = () => {
 
       <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 -mt-32 relative z-10 flex flex-col items-center">
         {/* Cover */}
-        <div className="w-48 h-72 rounded-xl overflow-hidden shadow-2xl mb-6 border-4 border-[#F4EFE6]">
+        <div className="w-48 h-72 rounded-xl overflow-hidden shadow-2xl mb-6 border-4 border-background">
           <img src={coverUrl} alt={manga.title} className="w-full h-full object-cover" />
         </div>
 
         {/* Title & Info */}
-        <h1 className="text-3xl md:text-4xl font-bold font-heading text-[#1F2544] text-center mb-2">
+        <h1 className="text-3xl md:text-4xl font-bold font-heading text-primary text-center mb-2">
           {manga.title}
         </h1>
         <p className="text-gray-600 mb-4 text-center font-medium">
@@ -99,7 +99,7 @@ export const ComicDetail: React.FC = () => {
         {manga.genres && manga.genres.length > 0 && (
           <div className="flex flex-wrap justify-center gap-2 mb-6">
             {manga.genres.map((g: any) => (
-              <span key={g.mal_id} className="px-3 py-1 bg-[#1F2544]/10 text-[#1F2544] text-xs font-bold rounded-full border border-[#1F2544]/20">
+              <span key={g.mal_id} className="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full border border-primary/20">
                 {g.name}
               </span>
             ))}
@@ -108,11 +108,11 @@ export const ComicDetail: React.FC = () => {
 
         <div className="flex items-center gap-6 mb-8 text-sm font-semibold text-gray-700">
           <div className="flex items-center gap-2">
-            <Eye size={18} className="text-[#1F2544]" />
+            <Eye size={18} className="text-primary" />
             {manga.members?.toLocaleString() || 0}
           </div>
           <div className="flex items-center gap-2">
-            <Bookmark size={18} className="text-[#1F2544]" />
+            <Bookmark size={18} className="text-primary" />
             {manga.favorites?.toLocaleString() || 0}
           </div>
         </div>
@@ -123,7 +123,7 @@ export const ComicDetail: React.FC = () => {
 
         <Link 
           to={`/read/${id}/1`} 
-          className="font-bold text-[#1F2544] underline hover:text-black mb-12"
+          className="font-bold text-primary underline hover:text-black mb-12"
         >
           Baca Episode Pertama
         </Link>
@@ -134,9 +134,9 @@ export const ComicDetail: React.FC = () => {
             <Link 
               to={`/read/${id}/${ep.id}`} 
               key={ep.id}
-              className="w-full bg-[#EAE3D2] hover:bg-[#DED7C6] transition-colors p-4 rounded-xl flex justify-between items-center"
+              className="w-full bg-surface hover:bg-[#DED7C6] transition-colors p-4 rounded-xl flex justify-between items-center"
             >
-              <span className="font-medium text-[#1F2544]">{ep.title}</span>
+              <span className="font-medium text-primary">{ep.title}</span>
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Heart size={16} className="fill-gray-400" />
                 {ep.likes}
@@ -160,9 +160,9 @@ export const ComicDetail: React.FC = () => {
             <div className="flex-1 flex flex-col gap-2">
               <textarea 
                 placeholder="Tuliskan Komen Anda..." 
-                className="w-full p-4 rounded-xl bg-[#EAE3D2] border-none focus:ring-2 focus:ring-[#1F2544] outline-none resize-none min-h-[100px]"
+                className="w-full p-4 rounded-xl bg-surface border-none focus:ring-2 focus:ring-primary outline-none resize-none min-h-25"
               ></textarea>
-              <button className="self-end px-6 py-2 bg-[#EAE3D2] text-[#1F2544] font-bold rounded-lg hover:bg-gray-300">
+              <button className="self-end px-6 py-2 bg-surface text-primary font-bold rounded-lg hover:bg-gray-300">
                 Kirim
               </button>
             </div>
@@ -174,9 +174,9 @@ export const ComicDetail: React.FC = () => {
                 <div className="w-10 h-10 rounded-full bg-gray-300 overflow-hidden shrink-0">
                   <img src={comment.avatar} alt={comment.name} />
                 </div>
-                <div className="flex-1 bg-[#EAE3D2] p-4 rounded-xl rounded-tl-none">
+                <div className="flex-1 bg-surface p-4 rounded-xl rounded-tl-none">
                   <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-bold text-[#1F2544]">{comment.name}</h4>
+                    <h4 className="font-bold text-primary">{comment.name}</h4>
                     <span className="text-xs text-gray-500">{comment.time}</span>
                   </div>
                   <p className="text-gray-800 text-sm leading-relaxed">{comment.text}</p>

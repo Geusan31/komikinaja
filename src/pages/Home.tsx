@@ -93,12 +93,12 @@ export const Home: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4EFE6] flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-12">
         {/* Hero Section */}
-        <div className="relative w-full rounded-3xl overflow-hidden bg-[#1F2544] text-white p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 min-h-[450px]">
+        <div className="relative w-full rounded-3xl overflow-hidden bg-primary text-white p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 min-h-112.5">
           <div className="md:w-1/2 flex flex-col items-start text-left z-10 animate-fade-in" key={`text-${currentBanner}`}>
             <h1 className="text-3xl md:text-4xl font-bold font-heading mb-4 leading-tight drop-shadow-md">
               {banners[currentBanner]?.title}
@@ -106,7 +106,7 @@ export const Home: React.FC = () => {
             <p className="text-gray-300 mb-8 max-w-md line-clamp-3 drop-shadow">
               {banners[currentBanner]?.description}
             </p>
-            <Link to={banners[currentBanner]?.url || '#'} className="bg-[#EAE3D2] text-[#1F2544] px-6 py-3 rounded-full font-bold hover:bg-white transition-colors">
+            <Link to={banners[currentBanner]?.url || '#'} className="bg-surface text-primary px-6 py-3 rounded-full font-bold hover:bg-white transition-colors">
               Lihat Komik
             </Link>
           </div>
@@ -150,7 +150,7 @@ export const Home: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Searching..." 
-            className="w-full pl-12 pr-4 py-4 rounded-xl border-2 border-gray-200 bg-transparent focus:border-[#1F2544] focus:ring-0 outline-none transition-colors"
+            className="w-full pl-12 pr-4 py-4 rounded-xl border-2 border-gray-200 bg-transparent focus:border-primary focus:ring-0 outline-none transition-colors"
           />
         </form>
 
@@ -161,7 +161,7 @@ export const Home: React.FC = () => {
         <Section title="Fantasi Manga Top 10" mangas={fantasi} loading={loadingState.fantasi} />
 
         <div className="flex justify-center mt-4">
-          <Link to="/category" className="text-[#1F2544] font-bold hover:underline flex items-center gap-1">
+          <Link to="/category" className="text-primary font-bold hover:underline flex items-center gap-1">
             View More
           </Link>
         </div>
@@ -175,8 +175,8 @@ export const Home: React.FC = () => {
 // Sub-component for sections
 const Section: React.FC<{ title: string; mangas: any[]; loading?: boolean }> = ({ title, mangas, loading = false }) => {
   return (
-    <div className="flex flex-col gap-6 text-left min-h-[200px]">
-      <h2 className="text-2xl font-bold font-heading text-[#1F2544]">{title}</h2>
+    <div className="flex flex-col gap-6 text-left min-h-50">
+      <h2 className="text-2xl font-bold font-heading text-primary">{title}</h2>
       {loading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {[1,2,3,4,5,6].map(i => <ComicSkeleton key={i} />)}

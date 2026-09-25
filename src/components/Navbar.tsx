@@ -15,7 +15,7 @@ export const Navbar: React.FC = () => {
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-4 md:gap-12">
           <button 
-            className="md:hidden text-[#F4EFE6]" 
+            className="md:hidden text-background" 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
@@ -26,17 +26,17 @@ export const Navbar: React.FC = () => {
           </Link>
           
           <div className="hidden md:flex items-center gap-8 font-semibold text-sm">
-            <Link to="/" className="text-[#F4EFE6] hover:text-amber-100">{t('nav.recommendation')}</Link>
-            <Link to="/trending" className="text-[#F4EFE6] hover:text-amber-100">{t('nav.trending')}</Link>
-            <Link to="/category" className="text-[#F4EFE6] hover:text-amber-100">{t('nav.category')}</Link>
+            <Link to="/" className="text-background hover:text-amber-100">{t('nav.recommendation')}</Link>
+            <Link to="/trending" className="text-background hover:text-amber-100">{t('nav.trending')}</Link>
+            <Link to="/category" className="text-background hover:text-amber-100">{t('nav.category')}</Link>
           </div>
         </div>
 
         <div className="flex items-center gap-4 md:gap-6">
-          <button className="text-[#F4EFE6] hover:text-black">
+          <button className="text-background hover:text-black">
             <Bell size={24} />
           </button>
-          <Link to="/profile" className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#F4EFE6] hover:ring-2 ring-offset-2 ring-[#1F2544] transition-all bg-white">
+          <Link to="/profile" className="w-10 h-10 rounded-full overflow-hidden border-2 border-background hover:ring-2 ring-offset-2 ring-primary transition-all bg-white">
             <img 
               src={user?.avatar || "https://placehold.co/100x100/1F2544/FFFFFF/png?text=U"} 
               alt="Profile" 
@@ -49,9 +49,9 @@ export const Navbar: React.FC = () => {
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden flex flex-col gap-4 mt-4 pt-4 border-t border-gray-300 font-semibold text-sm">
-          <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="text-[#F4EFE6] hover:text-black">{t('nav.recommendation')}</Link>
-          <Link to="/trending" onClick={() => setIsMobileMenuOpen(false)} className="text-[#F4EFE6] hover:text-black">{t('nav.trending')}</Link>
-          <Link to="/category" onClick={() => setIsMobileMenuOpen(false)} className="text-[#F4EFE6] hover:text-black">{t('nav.category')}</Link>
+          <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="text-background hover:text-black">{t('nav.recommendation')}</Link>
+          <Link to="/trending" onClick={() => setIsMobileMenuOpen(false)} className="text-background hover:text-black">{t('nav.trending')}</Link>
+          <Link to="/category" onClick={() => setIsMobileMenuOpen(false)} className="text-background hover:text-black">{t('nav.category')}</Link>
         </div>
       )}
     </nav>

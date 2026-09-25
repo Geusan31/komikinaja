@@ -40,14 +40,14 @@ export const ReadingMode: React.FC = () => {
   const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 20, 50));
 
   return (
-    <div className="min-h-screen bg-[#161A30] text-[#F4EFE6] flex flex-col relative">
+    <div className="min-h-screen bg-primary-hover text-background flex flex-col relative">
       {/* Topbar */}
-      <div className="sticky top-0 w-full bg-[#1F2544] p-4 flex items-center justify-between z-50">
+      <div className="sticky top-0 w-full bg-primary p-4 flex items-center justify-between z-50">
         <button onClick={() => navigate(-1)} className="hover:text-white transition-colors">
           <ChevronLeft size={28} />
         </button>
         <div className="flex flex-col items-center">
-          <span className="text-sm font-bold truncate max-w-[200px] sm:max-w-sm">{manga?.title || 'Loading...'}</span>
+          <span className="text-sm font-bold truncate max-w-50 sm:max-w-sm">{manga?.title || 'Loading...'}</span>
           <span className="text-xs text-gray-400">Ch. {episode}</span>
         </div>
         <button className="hover:text-white transition-colors">
@@ -83,14 +83,14 @@ export const ReadingMode: React.FC = () => {
       <div className="fixed bottom-24 right-6 flex flex-col gap-3 z-50">
         <button 
           onClick={handleZoomIn}
-          className="p-3 bg-[#1F2544] text-[#F4EFE6] rounded-full shadow-lg hover:bg-[#2A325A] transition-colors border border-gray-600"
+          className="p-3 bg-primary text-background rounded-full shadow-lg hover:bg-[#2A325A] transition-colors border border-gray-600"
           aria-label="Zoom In"
         >
           <ZoomIn size={24} />
         </button>
         <button 
           onClick={handleZoomOut}
-          className="p-3 bg-[#1F2544] text-[#F4EFE6] rounded-full shadow-lg hover:bg-[#2A325A] transition-colors border border-gray-600"
+          className="p-3 bg-primary text-background rounded-full shadow-lg hover:bg-[#2A325A] transition-colors border border-gray-600"
           aria-label="Zoom Out"
         >
           <ZoomOut size={24} />
@@ -98,7 +98,7 @@ export const ReadingMode: React.FC = () => {
       </div>
 
       {/* Bottom Navigation */}
-      <div className="w-full bg-[#1F2544] p-4 flex items-center justify-between mt-8">
+      <div className="w-full bg-primary p-4 flex items-center justify-between mt-8">
         <button 
           onClick={() => prevEp > 0 && navigate(`/read/${id}/${prevEp}`)}
           className={`flex items-center gap-2 font-bold ${prevEp > 0 ? 'hover:text-white' : 'opacity-50 cursor-not-allowed'}`}
@@ -127,9 +127,9 @@ export const ReadingMode: React.FC = () => {
           <div className="flex-1 flex flex-col gap-2">
             <textarea 
               placeholder="Tuliskan Komen Anda..." 
-              className="w-full p-4 rounded-xl bg-[#EAE3D2] text-[#1F2544] border-none focus:ring-2 focus:ring-[#1F2544] outline-none resize-none min-h-[100px]"
+              className="w-full p-4 rounded-xl bg-surface text-primary border-none focus:ring-2 focus:ring-primary outline-none resize-none min-h-25"
             ></textarea>
-            <button className="self-end px-6 py-2 bg-[#EAE3D2] text-[#1F2544] font-bold rounded-lg hover:bg-white">
+            <button className="self-end px-6 py-2 bg-surface text-primary font-bold rounded-lg hover:bg-white">
               Kirim
             </button>
           </div>
@@ -141,7 +141,7 @@ export const ReadingMode: React.FC = () => {
               <div className="w-10 h-10 rounded-full bg-gray-300 overflow-hidden shrink-0">
                 <img src={comment.avatar} alt={comment.name} />
               </div>
-              <div className="flex-1 bg-[#EAE3D2] text-[#1F2544] p-4 rounded-xl rounded-tl-none">
+              <div className="flex-1 bg-surface text-primary p-4 rounded-xl rounded-tl-none">
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="font-bold">{comment.name}</h4>
                   <span className="text-xs text-gray-600">{comment.time}</span>

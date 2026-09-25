@@ -89,11 +89,11 @@ export const Category: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4EFE6] flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
       {/* Category Navigation */}
-      <div className="w-full border-b-2 border-[#1F2544]/10 bg-[#F4EFE6] sticky top-[72px] z-40">
+      <div className="w-full border-b-2 border-primary/10 bg-background sticky top-18 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-8 overflow-x-auto py-4 hide-scrollbar">
             {categories.map((cat) => (
@@ -101,7 +101,7 @@ export const Category: React.FC = () => {
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
                 className={`font-bold whitespace-nowrap transition-colors ${
-                  activeCategory === cat ? 'text-[#1F2544]' : 'text-gray-500 hover:text-[#1F2544]'
+                  activeCategory === cat ? 'text-primary' : 'text-gray-500 hover:text-primary'
                 }`}
               >
                 {cat}
@@ -121,13 +121,13 @@ export const Category: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Searching..." 
-            className="w-full pl-12 pr-4 py-4 rounded-xl border-2 border-gray-200 bg-transparent focus:border-[#1F2544] focus:ring-0 outline-none transition-colors"
+            className="w-full pl-12 pr-4 py-4 rounded-xl border-2 border-gray-200 bg-transparent focus:border-primary focus:ring-0 outline-none transition-colors"
           />
         </form>
 
         {/* Filters & Stats */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-left">
-          <h2 className="font-bold text-[#1F2544]">{mangas.length} Serial Ditampilkan</h2>
+          <h2 className="font-bold text-primary">{mangas.length} Serial Ditampilkan</h2>
           
           <div className="flex items-center gap-4 text-sm font-medium">
             {["Popularitas", "Berdasarkan jumlah like", "Berdasarkan tanggal"].map((sort) => (
@@ -135,7 +135,7 @@ export const Category: React.FC = () => {
                 key={sort}
                 onClick={() => setActiveSort(sort)}
                 className={`transition-colors ${
-                  activeSort === sort ? 'text-[#1F2544]' : 'text-gray-500 hover:text-[#1F2544]'
+                  activeSort === sort ? 'text-primary' : 'text-gray-500 hover:text-primary'
                 } ${sort !== "Popularitas" ? 'border-l-2 border-gray-300 pl-4' : ''}`}
               >
                 {sort}
@@ -152,7 +152,7 @@ export const Category: React.FC = () => {
         ) : mangas.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 gap-2 text-center">
             <img src={emptyIllustration} alt="Not Found" className="w-80 h-80 object-contain drop-shadow-lg mb-10" />
-            <h3 className="text-2xl font-bold text-gray-500 mt-[-20px]">
+            <h3 className="text-2xl font-bold text-gray-500 -mt-5">
               '{searchParams.get('q') || "Manga"}' Not Found
             </h3>
           </div>
@@ -177,7 +177,7 @@ export const Category: React.FC = () => {
           <div className="flex justify-center mb-8">
             <button 
               onClick={handleLoadMore}
-              className="px-6 py-3 border-2 border-[#1F2544] text-[#1F2544] font-bold rounded-full hover:bg-[#1F2544] hover:text-white transition-colors"
+              className="px-6 py-3 border-2 border-primary text-primary font-bold rounded-full hover:bg-primary hover:text-white transition-colors"
             >
               View More
             </button>

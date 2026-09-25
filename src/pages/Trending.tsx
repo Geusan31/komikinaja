@@ -20,12 +20,12 @@ export const Trending: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#F4EFE6] flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
         <div className="flex flex-col gap-2 text-left">
-          <h1 className="text-3xl font-bold font-heading text-[#1F2544]">Trending Minggu Ini</h1>
+          <h1 className="text-3xl font-bold font-heading text-primary">Trending Minggu Ini</h1>
           <p className="text-gray-600">Komik paling populer berdasarkan data terbaru.</p>
         </div>
 
@@ -36,7 +36,7 @@ export const Trending: React.FC = () => {
         ) : trendingMangas.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 gap-2 text-center">
             <img src={emptyIllustration} alt="Not Found" className="w-80 h-80 object-contain drop-shadow-lg mb-10" />
-            <h3 className="text-2xl font-bold text-gray-500 mt-[-20px]">
+            <h3 className="text-2xl font-bold text-gray-500 -mt-5">
               Belum ada data komik trending.
             </h3>
           </div>

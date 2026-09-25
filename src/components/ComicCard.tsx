@@ -21,7 +21,7 @@ export const ComicCard: React.FC<ComicCardProps> = ({
 }) => {
   return (
     <div className="flex flex-col gap-2 group cursor-pointer">
-      <div className="relative aspect-[3/4] w-full rounded-md overflow-hidden bg-gray-200 shadow-sm transition-transform duration-300 group-hover:scale-105">
+      <div className="relative aspect-3/4 w-full rounded-md overflow-hidden bg-gray-200 shadow-sm transition-transform duration-300 group-hover:scale-105">
         <img 
           src={cover} 
           alt={title} 
@@ -34,7 +34,7 @@ export const ComicCard: React.FC<ComicCardProps> = ({
         )}
       </div>
       <div className="flex flex-col text-left mt-1">
-        <h3 className="font-bold text-[#1F2544] text-base leading-tight truncate">{title}</h3>
+        <h3 className="font-bold text-primary text-base leading-tight truncate">{title}</h3>
         <p className="text-sm text-gray-600 truncate">{episode}</p>
         <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
           <div className="flex items-center gap-1">
@@ -54,7 +54,7 @@ export const ComicCard: React.FC<ComicCardProps> = ({
 export const ComicSkeleton: React.FC = () => {
   return (
     <div className="flex flex-col gap-2 animate-pulse">
-      <div className="aspect-[3/4] w-full rounded-md bg-gray-300"></div>
+      <div className="aspect-3/4 w-full rounded-md bg-gray-300"></div>
       <div className="flex flex-col text-left mt-1 gap-2">
         <div className="h-4 bg-gray-300 rounded w-3/4"></div>
         <div className="h-3 bg-gray-300 rounded w-1/2"></div>
