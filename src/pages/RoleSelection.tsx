@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/Button';
 import { useAuth } from '../context/AuthContext';
+import { ChevronLeft } from 'lucide-react';
 
 export const RoleSelection: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState<'reader' | 'author' | null>(null);
   const navigate = useNavigate();
-  const { setRole } = useAuth();
+  const { setRole, logout } = useAuth();
 
   const handleContinue = () => {
     if (selectedRole) {
@@ -16,7 +17,16 @@ export const RoleSelection: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center bg-[#F4EFE6]">
+    <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center bg-[#F4EFE6] relative">
+      <button 
+        onClick={() => {
+          logout();
+          navigate('/login');
+        }}
+        className="absolute top-6 left-6 text-[#1F2544] hover:bg-[#1F2544]/10 p-2 rounded-full transition-colors z-50 cursor-pointer"
+      >
+        <ChevronLeft size={32} />
+      </button>
       <Link to="/" className="text-5xl font-bold font-heading text-[#1F2544] mb-8">
         K
       </Link>

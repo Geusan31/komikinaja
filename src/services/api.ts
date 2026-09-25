@@ -1,30 +1,50 @@
 import { mangas as dummyMangas } from '../data/dummy';
 
-const BASE_URL = 'https://api.jikan.moe/v4';
+const BASE_URL = 'https://kitsu.io/api/edge';
 
 const getFallbackMangas = () => {
   return dummyMangas.map(m => ({
     mal_id: m.id,
     title: m.title,
-    images: { webp: { image_url: m.cover } },
+    images: { webp: { image_url: m.cover }, jpg: { image_url: m.cover } },
     chapters: m.episode,
     score: m.likes,
     members: m.views,
-    status: m.isNew ? "Publishing" : "Finished"
+    status: m.isNew ? "Publishing" : "Finished",
+    synopsis: "No synopsis available."
   }));
 };
 
-const filterBannedMangas = (mangas: any[]) => {
-  const bannedIds = [71];
-  return mangas.filter(m => !bannedIds.includes(m.mal_id));
+const mapKitsuToAppFormat = (kitsuItem: any) => {
+  return {
+    mal_id: kitsuItem.id,
+    title: kitsuItem.attributes.canonicalTitle || kitsuItem.attributes.titles.en_jp || "Unknown Title",
+    images: { 
+      webp: { 
+        image_url: kitsuItem.attributes.posterImage?.small || kitsuItem.attributes.posterImage?.original || "https://placehold.co/400x600",
+        small_image_url: kitsuItem.attributes.posterImage?.tiny || kitsuItem.attributes.posterImage?.small || "https://placehold.co/100x150",
+        large_image_url: kitsuItem.attributes.posterImage?.large || kitsuItem.attributes.posterImage?.original || "https://placehold.co/800x1200"
+      },
+      jpg: { 
+        image_url: kitsuItem.attributes.posterImage?.small || kitsuItem.attributes.posterImage?.original || "https://placehold.co/400x600",
+        small_image_url: kitsuItem.attributes.posterImage?.tiny || kitsuItem.attributes.posterImage?.small || "https://placehold.co/100x150",
+        large_image_url: kitsuItem.attributes.posterImage?.large || kitsuItem.attributes.posterImage?.original || "https://placehold.co/800x1200"
+      }
+    },
+    chapters: kitsuItem.attributes.chapterCount || null,
+    score: kitsuItem.attributes.averageRating ? (parseFloat(kitsuItem.attributes.averageRating) / 10).toFixed(1) : 0,
+    members: kitsuItem.attributes.userCount || 0,
+    status: kitsuItem.attributes.status === 'current' ? 'Publishing' : 'Finished',
+    synopsis: kitsuItem.attributes.synopsis || "No synopsis available."
+  };
 };
 
 const fetchWithRetry = async (url: string, retries = 3, baseDelay = 1000): Promise<any> => {
   for (let i = 0; i < retries; i++) {
     try {
       const res = await fetch(url);
-      if (res.status === 429) {
-        // Rate limited, wait and retry
+      if (res.status === 429 || res.status >= 500) {
+        // Rate limited or Server Error, wait and retry
         await new Promise(resolve => setTimeout(resolve, baseDelay * (i + 1)));
         continue;
       }
@@ -38,47 +58,63 @@ const fetchWithRetry = async (url: string, retries = 3, baseDelay = 1000): Promi
   throw new Error('Max retries reached');
 };
 
-export const fetchManga = async (page = 1, query = '', limit = 24, genreId = '') => {
+export const fetchManga = async (page = 1, query = '', limit = 20, genreId = '', sortOrder = '-userCount') => {
   try {
-    const searchParam = query ? `&q=${encodeURIComponent(query)}` : '';
-    const genreParam = genreId ? `&genres=${genreId}` : '';
-    const data = await fetchWithRetry(`${BASE_URL}/manga?page=${page}&limit=${limit}${searchParam}${genreParam}&order_by=popularity&sort=asc&sfw=true&genres_exclude=9,12,26,28,43,49,58`);
-    return {
-      data: filterBannedMangas(data.data || getFallbackMangas()),
-      pagination: data.pagination || { has_next_page: false }
-    };
+    const actualLimit = Math.min(limit, 20);
+    const offset = (page - 1) * actualLimit;
+    let url = `${BASE_URL}/manga?page[limit]=${actualLimit}&page[offset]=${offset}&sort=${sortOrder}`;
+    
+    if (query) {
+      url += `&filter[text]=${encodeURIComponent(query)}`;
+    }
+    if (genreId) {
+      url += `&filter[categories]=${genreId}`;
+    }
+
+    const data = await fetchWithRetry(url);
+    
+    if (data.data && data.data.length > 0) {
+      return {
+        data: data.data.map(mapKitsuToAppFormat),
+        pagination: { has_next_page: !!data.links?.next }
+      };
+    }
+    
+    return { data: [], pagination: { has_next_page: false } };
+
   } catch (error) {
-    console.error("API error, using fallback data:", error);
-    return { data: filterBannedMangas(getFallbackMangas()), pagination: { has_next_page: false } };
+    console.error("API error:", error);
+    return { data: [], pagination: { has_next_page: false } };
   }
 };
 
 export const fetchTopManga = async (limit = 10) => {
   try {
-    const data = await fetchWithRetry(`${BASE_URL}/top/manga?limit=${limit}&sfw=true&genres_exclude=9,12,26,28,43,49,58`);
-    return filterBannedMangas(data.data || getFallbackMangas());
+    const actualLimit = Math.min(limit, 20);
+    const data = await fetchWithRetry(`${BASE_URL}/manga?page[limit]=${actualLimit}&sort=-averageRating`);
+    return data.data ? data.data.map(mapKitsuToAppFormat) : [];
   } catch (error) {
-    console.error("API error, using fallback data:", error);
-    return filterBannedMangas(getFallbackMangas());
+    console.error("API error:", error);
+    return [];
   }
 };
 
 export const fetchMangaDetail = async (id: string | number) => {
   try {
     const data = await fetchWithRetry(`${BASE_URL}/manga/${id}`);
-    return data.data || getFallbackMangas().find((m: any) => m.mal_id.toString() === id.toString()) || getFallbackMangas()[0];
+    return data.data ? mapKitsuToAppFormat(data.data) : null;
   } catch (error) {
-    console.error("API error, using fallback data:", error);
-    return getFallbackMangas().find((m: any) => m.mal_id.toString() === id.toString()) || getFallbackMangas()[0];
+    console.error("API error:", error);
+    return null;
   }
 };
 
 export const fetchMangaPictures = async (id: string | number) => {
   try {
-    const data = await fetchWithRetry(`${BASE_URL}/manga/${id}/pictures`);
-    return data.data || [];
+    // Kitsu doesn't have a direct equivalent to Jikan's pictures array
+    // Returning empty array will trigger the placeholder fallback logic in ReadingMode.tsx
+    return [];
   } catch (error) {
-    console.error("API error, using fallback data:", error);
     return [];
   }
 };

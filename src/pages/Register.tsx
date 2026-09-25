@@ -3,17 +3,21 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { loginColumn1, loginColumn2, loginColumn3 } from '../data/dummy';
+import { useAuth } from '../context/AuthContext';
 
 export const Register: React.FC = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate('/login');
+    login({ name: 'New User', email: 'user@komikinaja.com', avatar: 'https://dummyimage.com/200x200/1F2544/FFFFFF.png&text=U' });
+    navigate('/role-selection');
   };
 
   const handleGoogleRegister = () => {
-    navigate('/login');
+    login({ name: 'Google User', email: 'google@komikinaja.com', avatar: 'https://dummyimage.com/200x200/1F2544/FFFFFF.png&text=G' });
+    navigate('/role-selection');
   };
 
   return (

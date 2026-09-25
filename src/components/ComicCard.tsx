@@ -50,3 +50,19 @@ export const ComicCard: React.FC<ComicCardProps> = ({
     </div>
   );
 };
+
+export const ComicSkeleton: React.FC = () => {
+  return (
+    <div className="flex flex-col gap-2 animate-pulse">
+      <div className="aspect-[3/4] w-full rounded-md bg-gray-300"></div>
+      <div className="flex flex-col text-left mt-1 gap-2">
+        <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+        <div className="h-3 bg-gray-300 rounded w-1/2"></div>
+        <div className="flex items-center gap-3 mt-1">
+          <div className="h-3 bg-gray-300 rounded w-12"></div>
+          <div className="h-3 bg-gray-300 rounded w-12"></div>
+        </div>
+      </div>
+    </div>
+  );
+};
