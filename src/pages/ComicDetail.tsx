@@ -1,27 +1,38 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { fetchMangaDetail } from '../services/api';
-import { dummyEpisodes, dummyComments } from '../data/dummy';
-import { ChevronLeft, ChevronRight, Eye, Bookmark, Heart } from 'lucide-react';
+import { ChevronLeft, Eye, Bookmark, BookOpen, MessageCircle, AlertCircle } from 'lucide-react';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
+import { useLanguage } from '../context/LanguageContext';
+import type { Comic } from '../types/comic';
 
 export const ComicDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [manga, setManga] = useState<any>(null);
+  const { t } = useLanguage();
+  const [manga, setManga] = useState<Comic | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    const loadDetail = async () => {
-      if (id) {
-        const data = await fetchMangaDetail(id);
-        setManga(data);
-        setLoading(false);
-      }
-    };
-    loadDetail();
-  }, [id]);
+    if (!id) return;
+    let cancelled = false;
+    fetchMangaDetail(id).then(({ data, error: hasError }) => {
+      if (cancelled) return;
+      setManga(data);
+      setError(hasError);
+      setLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [id, reloadKey]);
+
+  const handleRetry = () => {
+    setLoading(true);
+    setError(false);
+    setReloadKey((k) => k + 1);
+  };
 
   if (loading) {
     return (
@@ -35,7 +46,7 @@ export const ComicDetail: React.FC = () => {
           {/* Skeleton Title & Info */}
           <div className="w-3/4 h-10 bg-gray-300 rounded mb-4"></div>
           <div className="w-1/2 h-6 bg-gray-300 rounded mb-8"></div>
-          
+
           <div className="flex gap-2 mb-6">
             <div className="w-20 h-6 bg-gray-300 rounded-full"></div>
             <div className="w-20 h-6 bg-gray-300 rounded-full"></div>
@@ -52,16 +63,42 @@ export const ComicDetail: React.FC = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center flex-col gap-4">
+        <div className="flex items-center gap-2 text-red-600 font-semibold">
+          <AlertCircle size={24} aria-hidden="true" />
+          {t('common.loadError')}
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={handleRetry}
+            className="px-6 py-3 bg-primary text-white font-bold rounded-full hover:bg-primary-hover transition-colors"
+          >
+            {t('common.retry')}
+          </button>
+          <button
+            onClick={() => navigate(-1)}
+            className="px-6 py-3 border-2 border-primary text-primary font-bold rounded-full hover:bg-primary hover:text-white transition-colors"
+          >
+            {t('common.back')}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (!manga) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center flex-col gap-4">
-        <p className="text-xl font-bold text-red-500">Manga tidak ditemukan.</p>
-        <button onClick={() => navigate(-1)} className="px-4 py-2 bg-primary text-white rounded">Kembali</button>
+        <p className="text-xl font-bold text-red-500">{t('detail.notFound')}</p>
+        <button onClick={() => navigate(-1)} className="px-4 py-2 bg-primary text-white rounded">{t('common.back')}</button>
       </div>
     );
   }
 
   const coverUrl = manga.images?.webp?.large_image_url || manga.images?.jpg?.large_image_url || "https://placehold.co/400x600";
+  const authorNames = manga.authors.map(a => a.name).join(', ');
 
   return (
     <div className="min-h-screen bg-background flex flex-col text-left">
@@ -69,16 +106,16 @@ export const ComicDetail: React.FC = () => {
 
       {/* Hero Header */}
       <div className="w-full h-64 md:h-80 relative overflow-hidden bg-primary">
-        <img 
-          src={coverUrl} 
-          alt="Background" 
+        <img
+          src={coverUrl}
+          alt=""
           className="w-full h-full object-cover opacity-40 blur-sm scale-110"
         />
-        <button 
+        <button
           onClick={() => navigate(-1)}
           className="absolute top-6 left-6 text-white hover:text-gray-300 z-10 flex items-center gap-1 font-bold bg-black/20 px-3 py-2 rounded-full backdrop-blur-sm"
         >
-          <ChevronLeft size={24} /> Kembali
+          <ChevronLeft size={24} aria-hidden="true" /> {t('common.back')}
         </button>
       </div>
 
@@ -93,13 +130,16 @@ export const ComicDetail: React.FC = () => {
           {manga.title}
         </h1>
         <p className="text-gray-600 mb-4 text-center font-medium">
-          Author: {manga.authors?.map((a: any) => a.name).join(', ') || 'Unknown'}
+          {t('detail.author')}: {authorNames || t('detail.unknownAuthor')}
         </p>
 
-        {manga.genres && manga.genres.length > 0 && (
+        {manga.genres.length > 0 && (
           <div className="flex flex-wrap justify-center gap-2 mb-6">
-            {manga.genres.map((g: any) => (
-              <span key={g.mal_id} className="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full border border-primary/20">
+            {manga.genres.map((g) => (
+              <span
+                key={g.mal_id}
+                className="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full border border-primary/20"
+              >
                 {g.name}
               </span>
             ))}
@@ -108,81 +148,40 @@ export const ComicDetail: React.FC = () => {
 
         <div className="flex items-center gap-6 mb-8 text-sm font-semibold text-gray-700">
           <div className="flex items-center gap-2">
-            <Eye size={18} className="text-primary" />
-            {manga.members?.toLocaleString() || 0}
+            <Eye size={18} className="text-primary" aria-hidden="true" />
+            {t('detail.views')}: {manga.members.toLocaleString()}
           </div>
           <div className="flex items-center gap-2">
-            <Bookmark size={18} className="text-primary" />
-            {manga.favorites?.toLocaleString() || 0}
+            <Bookmark size={18} className="text-primary" aria-hidden="true" />
+            {t('detail.favorites')}: {manga.favorites.toLocaleString()}
           </div>
         </div>
 
-        <p className="text-center text-gray-800 leading-relaxed mb-8 max-w-3xl">
-          {manga.synopsis || "Tidak ada sinopsis tersedia."}
+        <p className="text-center text-gray-800 leading-relaxed mb-12 max-w-3xl">
+          {manga.synopsis || t('detail.synopsisEmpty')}
         </p>
 
-        <Link 
-          to={`/read/${id}/1`} 
-          className="font-bold text-primary underline hover:text-black mb-12"
-        >
-          Baca Episode Pertama
-        </Link>
-
-        {/* Episode List */}
+        {/* Chapter list — hanya tampil jika data chapter benar-benar ada.
+            Komik Kitsu tidak punya chapter di KomikinAja, jadi tampilkan info jujur. */}
         <div className="w-full flex flex-col gap-3 mb-16">
-          {dummyEpisodes.map((ep) => (
-            <Link 
-              to={`/read/${id}/${ep.id}`} 
-              key={ep.id}
-              className="w-full bg-surface hover:bg-[#DED7C6] transition-colors p-4 rounded-xl flex justify-between items-center"
-            >
-              <span className="font-medium text-primary">{ep.title}</span>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Heart size={16} className="fill-gray-400" />
-                {ep.likes}
-              </div>
-            </Link>
-          ))}
-          
-          <div className="flex justify-center gap-2 mt-4 font-bold text-gray-500">
-            <span>1</span> <span>2</span> <span>3</span> ... <ChevronRight />
+          <h3 className="font-bold text-xl text-gray-700 flex items-center gap-2">
+            <BookOpen size={20} className="text-primary" aria-hidden="true" />
+            {t('detail.chapters')}
+          </h3>
+          <div className="bg-surface/70 border border-primary/10 rounded-xl p-6 flex flex-col gap-1">
+            <p className="font-semibold text-primary">{t('detail.noChapters')}</p>
+            <p className="text-sm text-gray-600">{t('detail.noChaptersDesc')}</p>
           </div>
         </div>
 
-        {/* Comments Section */}
-        <div className="w-full flex flex-col gap-6">
-          <h3 className="font-bold text-xl text-gray-400">104 Komen</h3>
-          
-          <div className="flex gap-4 items-start">
-            <div className="w-10 h-10 rounded-full bg-gray-300 overflow-hidden shrink-0">
-              <img src="https://placehold.co/100x100/1F2544/FFFFFF/png?text=Me" alt="My avatar" />
-            </div>
-            <div className="flex-1 flex flex-col gap-2">
-              <textarea 
-                placeholder="Tuliskan Komen Anda..." 
-                className="w-full p-4 rounded-xl bg-surface border-none focus:ring-2 focus:ring-primary outline-none resize-none min-h-25"
-              ></textarea>
-              <button className="self-end px-6 py-2 bg-surface text-primary font-bold rounded-lg hover:bg-gray-300">
-                Kirim
-              </button>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-6 mt-4">
-            {dummyComments.map(comment => (
-              <div key={comment.id} className="flex gap-4 items-start">
-                <div className="w-10 h-10 rounded-full bg-gray-300 overflow-hidden shrink-0">
-                  <img src={comment.avatar} alt={comment.name} />
-                </div>
-                <div className="flex-1 bg-surface p-4 rounded-xl rounded-tl-none">
-                  <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-bold text-primary">{comment.name}</h4>
-                    <span className="text-xs text-gray-500">{comment.time}</span>
-                  </div>
-                  <p className="text-gray-800 text-sm leading-relaxed">{comment.text}</p>
-                </div>
-              </div>
-            ))}
+        {/* Comments — hanya info status, form dan data dummy dihapus */}
+        <div className="w-full flex flex-col gap-4 mb-16">
+          <h3 className="font-bold text-xl text-gray-700 flex items-center gap-2">
+            <MessageCircle size={20} className="text-primary" aria-hidden="true" />
+            {t('detail.comments')}
+          </h3>
+          <div className="bg-surface/70 border border-primary/10 rounded-xl p-6 flex flex-col gap-1">
+            <p className="text-sm text-gray-600">{t('detail.commentsSoon')}</p>
           </div>
         </div>
       </main>

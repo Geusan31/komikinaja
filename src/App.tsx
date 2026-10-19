@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { Home } from './pages/Home';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
@@ -20,7 +21,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
-  
+
   if (user && !user.role && location.pathname !== '/role-selection') {
     return <Navigate to="/role-selection" replace />;
   }
@@ -30,7 +31,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
-  
+
   if (user && user.role) {
     return <Navigate to="/" replace />;
   }
@@ -47,7 +48,7 @@ function AppRoutes() {
       {/* Public Routes */}
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
-      
+
       {/* Semi-Protected (Needs user but not necessarily role) */}
       <Route path="/role-selection" element={
         <ProtectedRoute>
@@ -55,14 +56,15 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
 
-      {/* Protected Routes */}
-      <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-      <Route path="/category" element={<ProtectedRoute><Category /></ProtectedRoute>} />
-      <Route path="/trending" element={<ProtectedRoute><Trending /></ProtectedRoute>} />
-      <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-      <Route path="/add-comic" element={<ProtectedRoute><AddComic /></ProtectedRoute>} />
-      <Route path="/comic/:id" element={<ProtectedRoute><ComicDetail /></ProtectedRoute>} />
-      <Route path="/read/:id/:episode" element={<ProtectedRoute><ReadingMode /></ProtectedRoute>} />
+      {/* Protected Routes — tiap route punya error boundary sendiri
+          agar satu halaman gagal tidak mematikan seluruh aplikasi */}
+      <Route path="/" element={<ProtectedRoute><ErrorBoundary sectionName="beranda"><Home /></ErrorBoundary></ProtectedRoute>} />
+      <Route path="/category" element={<ProtectedRoute><ErrorBoundary sectionName="kategori"><Category /></ErrorBoundary></ProtectedRoute>} />
+      <Route path="/trending" element={<ProtectedRoute><ErrorBoundary sectionName="trending"><Trending /></ErrorBoundary></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><ErrorBoundary sectionName="profil"><Profile /></ErrorBoundary></ProtectedRoute>} />
+      <Route path="/add-comic" element={<ProtectedRoute><ErrorBoundary sectionName="tambah komik"><AddComic /></ErrorBoundary></ProtectedRoute>} />
+      <Route path="/comic/:id" element={<ProtectedRoute><ErrorBoundary sectionName="detail komik"><ComicDetail /></ErrorBoundary></ProtectedRoute>} />
+      <Route path="/read/:id/:episode" element={<ProtectedRoute><ErrorBoundary sectionName="mode baca"><ReadingMode /></ErrorBoundary></ProtectedRoute>} />
     </Routes>
   );
 }

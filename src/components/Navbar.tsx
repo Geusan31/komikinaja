@@ -17,6 +17,8 @@ export const Navbar: React.FC = () => {
           <button 
             className="md:hidden text-background" 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label={isMobileMenuOpen ? t('nav.closeMenu') : t('nav.menu')}
+            aria-expanded={isMobileMenuOpen}
           >
             {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
@@ -33,10 +35,16 @@ export const Navbar: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-4 md:gap-6">
-          <button className="text-background hover:text-black">
+          {/* Notifikasi belum berfungsi (butuh backend) — dinonaktifkan dengan jelas */}
+          <button 
+            disabled
+            title={t('common.soon')}
+            aria-label={t('nav.notifications')}
+            className="text-background opacity-50 cursor-not-allowed"
+          >
             <Bell size={24} />
           </button>
-          <Link to="/profile" className="w-10 h-10 rounded-full overflow-hidden border-2 border-background hover:ring-2 ring-offset-2 ring-primary transition-all bg-white">
+          <Link to="/profile" aria-label={t('profile.account')} className="w-10 h-10 rounded-full overflow-hidden border-2 border-background hover:ring-2 ring-offset-2 ring-primary transition-all bg-white">
             <img 
               src={user?.avatar || "https://placehold.co/100x100/1F2544/FFFFFF/png?text=U"} 
               alt="Profile" 
