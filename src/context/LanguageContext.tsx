@@ -65,6 +65,8 @@ export const translations: Translations = {
     'detail.comments': 'Komentar',
     'detail.commentsSoon': 'Komentar akan tersedia setelah sistem akun dan backend terintegrasi.',
     'detail.synopsisEmpty': 'Tidak ada sinopsis tersedia.',
+    'detail.addFavorite': 'Tambah ke Favorit',
+    'detail.removeFavorite': 'Hapus dari Favorit',
 
     'read.notAvailableTitle': 'Konten chapter ini belum tersedia.',
     'read.notAvailableDesc':
@@ -88,6 +90,7 @@ export const translations: Translations = {
     'profile.fillPromo': 'Isi Kode Promosi',
     'profile.logout': 'Keluar',
     'profile.edit': 'Edit',
+    'profile.save': 'Simpan',
     'profile.comicsEmpty': 'Belum ada komik yang diterbitkan.',
     'profile.comicsEmptyDesc': 'Komik yang kamu terbitkan akan muncul di sini.',
     'profile.favoritesEmpty': 'Belum ada komik favorit.',
@@ -117,6 +120,7 @@ export const translations: Translations = {
     'register.googleSoon': 'Daftar dengan Google (segera hadir)',
     'register.haveAccount': 'Sudah punya akun?',
     'register.signInLink': 'Sign in',
+    'register.checkEmail': 'Pendaftaran berhasil! Kami telah mengirim email konfirmasi — buka inbox kamu untuk mengaktifkan akun.',
 
     'role.title': 'Kamu mau jadi apa di KomikinAja?',
     'role.subtitle': 'Pilih peran yang sesuai kamu banget! Kamu bisa mengubahnya kapan saja di pengaturan.',
@@ -189,6 +193,8 @@ export const translations: Translations = {
     'detail.comments': 'Comments',
     'detail.commentsSoon': 'Comments will be available after the account system and backend are integrated.',
     'detail.synopsisEmpty': 'No synopsis available.',
+    'detail.addFavorite': 'Add to Favorites',
+    'detail.removeFavorite': 'Remove from Favorites',
 
     'read.notAvailableTitle': 'This chapter content is not available yet.',
     'read.notAvailableDesc':
@@ -212,6 +218,7 @@ export const translations: Translations = {
     'profile.fillPromo': 'Enter Promo Code',
     'profile.logout': 'Log Out',
     'profile.edit': 'Edit',
+    'profile.save': 'Save',
     'profile.comicsEmpty': 'No comics published yet.',
     'profile.comicsEmptyDesc': 'Comics you publish will appear here.',
     'profile.favoritesEmpty': 'No favorite comics yet.',
@@ -240,6 +247,7 @@ export const translations: Translations = {
     'register.googleSoon': 'Sign up with Google (coming soon)',
     'register.haveAccount': 'Already have an account?',
     'register.signInLink': 'Sign in',
+    'register.checkEmail': "Registration successful! We've sent a confirmation email — open your inbox to activate your account.",
 
     'role.title': 'What do you want to be on KomikinAja?',
     'role.subtitle': 'Pick the role that suits you best! You can change it anytime in settings.',

@@ -15,8 +15,13 @@ import { ReadingMode } from './pages/ReadingMode';
 import { AddComic } from './pages/AddComic';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const location = useLocation();
+
+  // Selagi sesi Supabase belum siap, jangan putuskan arah dulu.
+  if (loading) {
+    return null;
+  }
 
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
@@ -30,7 +35,11 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 };
 
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return null;
+  }
 
   if (user && user.role) {
     return <Navigate to="/" replace />;

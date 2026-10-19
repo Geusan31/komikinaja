@@ -1,27 +1,69 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { listFavorites, type FavoriteEntry } from '../services/favorites';
 
-import { Edit2, BookOpen, Heart } from 'lucide-react';
+import { BookOpen, Heart, Mail, Check, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 export const Profile: React.FC = () => {
-  const { user, logout, setRole } = useAuth();
+  const { user, logout, setRole, updateProfile } = useAuth();
   const { language, toggleLanguage, t } = useLanguage();
   const navigate = useNavigate();
   const isAuthor = user?.role === 'author';
   const [activeTab, setActiveTab] = useState(isAuthor ? 'KOMIK' : 'FAVORIT');
 
-  const handleLogout = () => {
-    logout();
+  // Data favorit sungguhan dari Supabase (hanya untuk pembaca).
+  const [favorites, setFavorites] = useState<FavoriteEntry[]>([]);
+  const [favLoading, setFavLoading] = useState(true);
+  const [favError, setFavError] = useState(false);
+
+  // State edit nama panggilan.
+  const [editingName, setEditingName] = useState(false);
+  const [newName, setNewName] = useState(user?.name ?? '');
+  const [nameSaving, setNameSaving] = useState(false);
+  const [nameError, setNameError] = useState('');
+
+  useEffect(() => {
+    if (isAuthor || activeTab !== 'FAVORIT') return;
+    let cancelled = false;
+    listFavorites().then(({ data, error }) => {
+      if (cancelled) return;
+      setFavorites(data);
+      setFavError(error);
+      setFavLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [activeTab, isAuthor]);
+
+  const showMainTab = () => {
+    if (!isAuthor) setFavLoading(true);
+    setActiveTab(isAuthor ? 'KOMIK' : 'FAVORIT');
+  };
+
+  const handleLogout = async () => {
+    await logout();
     navigate('/login');
   };
 
-  const handleChangeRole = () => {
-    setRole(isAuthor ? 'reader' : 'author');
-    setActiveTab(!isAuthor ? 'KOMIK' : 'FAVORIT');
+  const handleChangeRole = async () => {
+    await setRole(isAuthor ? 'reader' : 'author');
+  };
+
+  const saveName = async () => {
+    const trimmed = newName.trim();
+    if (!trimmed) return;
+    setNameSaving(true);
+    setNameError('');
+    const { error } = await updateProfile({ username: trimmed });
+    setNameSaving(false);
+    if (error) {
+      setNameError(error);
+      return;
+    }
+    setEditingName(false);
   };
 
   return (
@@ -34,15 +76,8 @@ export const Profile: React.FC = () => {
         <div className="flex flex-col md:flex-row gap-6 items-center md:items-start pb-8 border-b-2 border-gray-300">
           <div className="relative">
             <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-primary">
-              <img src={user?.avatar} alt="Profile" className="w-full h-full object-cover" />
+              <img src={user?.avatar} alt={user?.name || 'Profile'} className="w-full h-full object-cover" />
             </div>
-            <span
-              title={t('common.soon')}
-              className="absolute bottom-0 right-0 bg-white p-2 rounded-full border border-gray-300 shadow-sm opacity-50 cursor-not-allowed"
-              aria-disabled="true"
-            >
-              <Edit2 size={16} className="text-primary" aria-hidden="true" />
-            </span>
           </div>
 
           <div className="flex flex-col text-center md:text-left gap-2 pt-2">
@@ -58,7 +93,7 @@ export const Profile: React.FC = () => {
         <div className="flex items-center justify-between border-b-2 border-gray-300">
           <div className="flex gap-8">
             <button
-              onClick={() => setActiveTab(isAuthor ? 'KOMIK' : 'FAVORIT')}
+              onClick={showMainTab}
               aria-pressed={activeTab !== 'AKUN'}
               className={`pb-4 font-bold text-sm tracking-widest uppercase transition-colors ${
                 activeTab !== 'AKUN' ? 'text-primary border-b-4 border-primary' : 'text-gray-500 hover:text-gray-800'
@@ -88,23 +123,59 @@ export const Profile: React.FC = () => {
         {activeTab === 'AKUN' ? (
           <div className="flex flex-col gap-6">
             <AccountSection title={t('profile.loginWith')}>
-              <div className="flex items-center gap-2 text-primary font-bold">
-                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="" className="w-5 h-5" />
-                {user?.name}
-              </div>
+              {user?.provider === 'google' ? (
+                <div className="flex items-center gap-2 text-primary font-bold">
+                  <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="" className="w-5 h-5" />
+                  Google
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-primary font-bold">
+                  <Mail size={20} aria-hidden="true" />
+                  {user?.email}
+                </div>
+              )}
             </AccountSection>
 
             <AccountSection title={t('profile.nickname')}>
               <div className="flex justify-between items-center w-full text-sm font-bold text-primary">
-                <span>{user?.name}</span>
-                <button
-                  disabled
-                  title={t('common.soon')}
-                  className="px-4 py-1 border border-gray-400 rounded-full opacity-50 cursor-not-allowed"
-                >
-                  {t('profile.edit')}
-                </button>
+                {editingName ? (
+                  <div className="flex items-center gap-2 w-full">
+                    <input
+                      type="text"
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      className="flex-1 px-3 py-1 border border-gray-300 rounded-md outline-none focus:border-primary text-primary"
+                      aria-label={t('profile.nickname')}
+                    />
+                    <button
+                      onClick={saveName}
+                      disabled={nameSaving}
+                      className="p-1 text-green-600 hover:text-green-700 disabled:opacity-50"
+                      aria-label={t('profile.save')}
+                    >
+                      <Check size={18} aria-hidden="true" />
+                    </button>
+                    <button
+                      onClick={() => { setEditingName(false); setNewName(user?.name ?? ''); setNameError(''); }}
+                      className="p-1 text-gray-500 hover:text-gray-700"
+                      aria-label={t('common.back')}
+                    >
+                      <X size={18} aria-hidden="true" />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <span>{user?.name}</span>
+                    <button
+                      onClick={() => { setNewName(user?.name ?? ''); setEditingName(true); }}
+                      className="px-4 py-1 border border-gray-400 rounded-full hover:bg-gray-200"
+                    >
+                      {t('profile.edit')}
+                    </button>
+                  </>
+                )}
               </div>
+              {nameError && <p role="alert" className="text-red-500 text-xs w-full mt-1">{nameError}</p>}
             </AccountSection>
 
             <AccountSection title={t('profile.settings')}>
@@ -182,22 +253,56 @@ export const Profile: React.FC = () => {
               </button>
             </div>
           </div>
-        ) : (
-          /* Komik / Favorit Tab — data backend belum tersedia, tampilkan empty state jujur */
+        ) : isAuthor ? (
+          /* Tab KOMIK (Author) — backend unggah karya belum ada (M3), tampilkan empty state jujur */
           <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
             <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center">
-              {isAuthor ? (
-                <BookOpen size={28} className="text-primary" aria-hidden="true" />
-              ) : (
-                <Heart size={28} className="text-primary" aria-hidden="true" />
-              )}
+              <BookOpen size={28} className="text-primary" aria-hidden="true" />
             </div>
-            <h3 className="text-xl font-bold text-primary">
-              {isAuthor ? t('profile.comicsEmpty') : t('profile.favoritesEmpty')}
-            </h3>
-            <p className="text-sm text-gray-600 max-w-sm">
-              {isAuthor ? t('profile.comicsEmptyDesc') : t('profile.favoritesEmptyDesc')}
-            </p>
+            <h3 className="text-xl font-bold text-primary">{t('profile.comicsEmpty')}</h3>
+            <p className="text-sm text-gray-600 max-w-sm">{t('profile.comicsEmptyDesc')}</p>
+          </div>
+        ) : (
+          /* Tab FAVORIT (Reader) — data sungguhan dari tabel favorites */
+          <div className="flex flex-col gap-4">
+            {favLoading ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="flex flex-col gap-2 animate-pulse">
+                    <div className="aspect-3/4 w-full rounded-md bg-gray-300"></div>
+                    <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                  </div>
+                ))}
+              </div>
+            ) : favError ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+                <p className="text-sm text-red-500">{t('common.loadError')}</p>
+              </div>
+            ) : favorites.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+                <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center">
+                  <Heart size={28} className="text-primary" aria-hidden="true" />
+                </div>
+                <h3 className="text-xl font-bold text-primary">{t('profile.favoritesEmpty')}</h3>
+                <p className="text-sm text-gray-600 max-w-sm">{t('profile.favoritesEmptyDesc')}</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {favorites.map((fav) => (
+                  <Link key={fav.comicId} to={`/comic/${fav.comicId}`} className="flex flex-col gap-2 group">
+                    <div className="aspect-3/4 w-full rounded-md overflow-hidden bg-gray-200 shadow-sm transition-transform duration-300 group-hover:scale-105">
+                      <img
+                        src={fav.cover || 'https://placehold.co/400x600'}
+                        alt={fav.title}
+                        loading="lazy"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <h3 className="font-bold text-primary text-sm leading-tight truncate">{fav.title}</h3>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </main>

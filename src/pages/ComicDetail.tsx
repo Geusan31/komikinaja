@@ -1,20 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchMangaDetail } from '../services/api';
-import { ChevronLeft, Eye, Bookmark, BookOpen, MessageCircle, AlertCircle } from 'lucide-react';
+import { ChevronLeft, Eye, Bookmark, BookOpen, MessageCircle, AlertCircle, Heart } from 'lucide-react';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
+import { isFavorite, addFavorite, removeFavorite } from '../services/favorites';
 import type { Comic } from '../types/comic';
 
 export const ComicDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [manga, setManga] = useState<Comic | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const [isFav, setIsFav] = useState(false);
+  const [favBusy, setFavBusy] = useState(false);
+  const [favError, setFavError] = useState('');
 
   useEffect(() => {
     if (!id) return;
@@ -28,10 +34,38 @@ export const ComicDetail: React.FC = () => {
     return () => { cancelled = true; };
   }, [id, reloadKey]);
 
+  // Cek status favorit komik ini untuk pengguna yang login.
+  useEffect(() => {
+    if (!id || !user) return;
+    let cancelled = false;
+    isFavorite(id).then((fav) => {
+      if (!cancelled) setIsFav(fav);
+    });
+    return () => { cancelled = true; };
+  }, [id, user]);
+
   const handleRetry = () => {
     setLoading(true);
     setError(false);
     setReloadKey((k) => k + 1);
+  };
+
+  const handleToggleFavorite = async () => {
+    if (!user || !manga) return;
+    setFavBusy(true);
+    setFavError('');
+    const comicId = String(manga.mal_id);
+    if (isFav) {
+      const { error: removeError } = await removeFavorite(comicId);
+      if (removeError) setFavError(removeError);
+      else setIsFav(false);
+    } else {
+      const cover = manga.images?.webp?.large_image_url || manga.images?.jpg?.large_image_url || null;
+      const { error: addError } = await addFavorite({ comicId, title: manga.title, cover });
+      if (addError) setFavError(addError);
+      else setIsFav(true);
+    }
+    setFavBusy(false);
   };
 
   if (loading) {
@@ -146,7 +180,7 @@ export const ComicDetail: React.FC = () => {
           </div>
         )}
 
-        <div className="flex items-center gap-6 mb-8 text-sm font-semibold text-gray-700">
+        <div className="flex items-center gap-6 mb-6 text-sm font-semibold text-gray-700">
           <div className="flex items-center gap-2">
             <Eye size={18} className="text-primary" aria-hidden="true" />
             {t('detail.views')}: {manga.members.toLocaleString()}
@@ -156,6 +190,26 @@ export const ComicDetail: React.FC = () => {
             {t('detail.favorites')}: {manga.favorites.toLocaleString()}
           </div>
         </div>
+
+        {user && (
+          <div className="flex flex-col items-center gap-2 mb-8">
+            <button
+              type="button"
+              onClick={handleToggleFavorite}
+              disabled={favBusy}
+              aria-pressed={isFav}
+              className={`px-6 py-2 rounded-full font-bold border-2 transition-colors flex items-center gap-2 disabled:opacity-60 ${
+                isFav
+                  ? 'bg-primary text-white border-primary'
+                  : 'bg-transparent text-primary border-primary hover:bg-primary hover:text-white'
+              }`}
+            >
+              <Heart size={18} className={isFav ? 'fill-white' : ''} aria-hidden="true" />
+              {isFav ? t('detail.removeFavorite') : t('detail.addFavorite')}
+            </button>
+            {favError && <p role="alert" className="text-red-500 text-xs">{favError}</p>}
+          </div>
+        )}
 
         <p className="text-center text-gray-800 leading-relaxed mb-12 max-w-3xl">
           {manga.synopsis || t('detail.synopsisEmpty')}

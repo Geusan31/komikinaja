@@ -1,24 +1,9 @@
 /**
- * Data dummy untuk demo auth dan konten fallback UI.
+ * Data dummy untuk konten fallback UI.
  *
- * Catatan (M1): kredensial di bawah hanya untuk demo lokal sampai
- * Supabase Auth terintegrasi (M2). Jangan dipakai di produksi.
+ * Catatan (M2): autentikasi sudah memakai Supabase Auth, jadi kredensial
+ * demo sudah dihapus dari sini.
  */
-export const loginCredentials = {
-  reader: {
-    email: 'reader@komikinaja.com',
-    password: 'password123',
-    role: 'reader',
-    name: 'Pembaca Setia'
-  },
-  author: {
-    email: 'author@komikinaja.com',
-    password: 'password123',
-    role: 'author',
-    name: 'Author Kreatif'
-  }
-};
-
 export const categories = [
   "ALL", "DRAMA", "FANTASI", "KERAJAAN", "ACTION", "ROMANCE", "SLICE OF LIFE", "HORROR", "THRILLER"
 ];

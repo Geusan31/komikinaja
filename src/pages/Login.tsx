@@ -2,31 +2,41 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
-import { loginCredentials, loginColumn1, loginColumn2, loginColumn3 } from '../data/dummy';
+import { loginColumn1, loginColumn2, loginColumn3 } from '../data/dummy';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [googleSubmitting, setGoogleSubmitting] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Check dummy credentials
-    if (email === loginCredentials.reader.email && password === loginCredentials.reader.password) {
-      login({ name: loginCredentials.reader.name, email, avatar: 'https://placehold.co/200x200/1F2544/FFFFFF/png?text=R' });
-      navigate('/role-selection');
-    } else if (email === loginCredentials.author.email && password === loginCredentials.author.password) {
-      login({ name: loginCredentials.author.name, email, avatar: 'https://placehold.co/200x200/FF5722/FFFFFF/png?text=A' });
-      navigate('/role-selection');
-    } else {
-      setError(t('login.error'));
+    setError('');
+    setSubmitting(true);
+    const { error: loginError } = await login(email, password);
+    setSubmitting(false);
+    if (loginError) {
+      setError(loginError);
+      return;
     }
+    // setRole di AuthContext; ProtectedRoute akan mengarahkan sesuai ada-tidaknya role.
+    navigate('/', { replace: true });
+  };
+
+  const handleGoogle = async () => {
+    setError('');
+    setGoogleSubmitting(true);
+    const { error: googleError } = await loginWithGoogle();
+    setGoogleSubmitting(false);
+    // Bila provider Google belum diaktifkan, Supabase mengembalikan pesan yang kita tampilkan apa adanya.
+    if (googleError) setError(googleError);
   };
 
   return (
@@ -51,6 +61,7 @@ export const Login: React.FC = () => {
               placeholder="Namamail@gmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
               required
             />
             <Input
@@ -58,37 +69,39 @@ export const Login: React.FC = () => {
               placeholder="Masukkan Sandi"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
               required
             />
 
-            {error && <p className="text-red-500 text-sm mb-4 text-left">{error}</p>}
+            {error && (
+              <p role="alert" className="text-red-500 text-sm mb-4 text-left">{error}</p>
+            )}
 
             <div className="flex items-center justify-between mb-8 text-sm">
               <label className="flex items-center gap-2 cursor-pointer text-primary font-medium">
                 <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-600 accent-teal-600" defaultChecked />
                 {t('login.remember')}
               </label>
-              {/* Link "Lupa Sandi" dinonaktifkan sementara — fitur reset password butuh backend */}
+              {/* Link "Lupa Sandi" dinonaktifkan sementara — fitur reset password butuh alur email */}
               <span className="text-gray-400 font-medium cursor-not-allowed" title={t('common.soon')}>
                 {t('login.forgot')}
               </span>
             </div>
 
-            <Button type="submit" fullWidth className="mb-6">
-              {t('login.signIn')}
+            <Button type="submit" fullWidth className="mb-6" disabled={submitting}>
+              {submitting ? t('common.loading') : t('login.signIn')}
             </Button>
 
-            {/* Login Google hanya tampil setelah OAuth dikonfigurasi (M2) */}
             <Button
               type="button"
               variant="secondary"
               fullWidth
-              disabled
-              title={t('common.soon')}
-              className="border border-primary flex items-center justify-center gap-2 opacity-60 cursor-not-allowed"
+              onClick={handleGoogle}
+              disabled={googleSubmitting}
+              className="border border-primary"
             >
               <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="" className="w-5 h-5" />
-              {t('login.googleSoon')}
+              {googleSubmitting ? t('common.loading') : t('login.google')}
             </Button>
           </form>
 

@@ -11,9 +11,9 @@ export const RoleSelection: React.FC = () => {
   const { setRole, logout } = useAuth();
   const { t } = useLanguage();
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (selectedRole) {
-      setRole(selectedRole);
+      await setRole(selectedRole);
       navigate('/');
     }
   };

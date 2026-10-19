@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
@@ -8,13 +8,42 @@ import { useLanguage } from '../context/LanguageContext';
 
 export const Register: React.FC = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const { t } = useLanguage();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [googleSubmitting, setGoogleSubmitting] = useState(false);
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    login({ name: 'New User', email: 'user@komikinaja.com', avatar: 'https://dummyimage.com/200x200/1F2544/FFFFFF.png&text=U' });
-    navigate('/role-selection');
+    setError('');
+    setInfo('');
+    setSubmitting(true);
+    const { error: regError, needsEmailConfirm } = await register(name, email, password);
+    setSubmitting(false);
+
+    if (regError) {
+      setError(regError);
+      return;
+    }
+    if (needsEmailConfirm) {
+      // Email confirmation aktif di Supabase — belum ada sesi, jangan langsung masuk.
+      setInfo(t('register.checkEmail'));
+      return;
+    }
+    navigate('/role-selection', { replace: true });
+  };
+
+  const handleGoogle = async () => {
+    setError('');
+    setGoogleSubmitting(true);
+    const { error: googleError } = await loginWithGoogle();
+    setGoogleSubmitting(false);
+    if (googleError) setError(googleError);
   };
 
   return (
@@ -37,16 +66,26 @@ export const Register: React.FC = () => {
             <Input
               type="text"
               placeholder={t('register.fullName')}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoComplete="name"
               required
             />
             <Input
               type="email"
               placeholder={t('register.email')}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
               required
             />
             <Input
               isPassword
               placeholder={t('register.password')}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
+              minLength={6}
               required
             />
 
@@ -57,21 +96,27 @@ export const Register: React.FC = () => {
               </label>
             </div>
 
-            <Button type="submit" fullWidth className="mb-6">
-              {t('register.signUp')}
+            {error && (
+              <p role="alert" className="text-red-500 text-sm mb-4 text-left">{error}</p>
+            )}
+            {info && (
+              <p role="status" className="text-green-700 text-sm mb-4 text-left">{info}</p>
+            )}
+
+            <Button type="submit" fullWidth className="mb-6" disabled={submitting}>
+              {submitting ? t('common.loading') : t('register.signUp')}
             </Button>
 
-            {/* Google register hanya tampil setelah OAuth dikonfigurasi (M2) */}
             <Button
               type="button"
               variant="secondary"
               fullWidth
-              disabled
-              title={t('common.soon')}
-              className="border border-primary flex items-center justify-center gap-2 opacity-60 cursor-not-allowed"
+              onClick={handleGoogle}
+              disabled={googleSubmitting}
+              className="border border-primary"
             >
               <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="" className="w-5 h-5" />
-              {t('register.googleSoon')}
+              {googleSubmitting ? t('common.loading') : t('register.google')}
             </Button>
           </form>
 
