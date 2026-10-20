@@ -4,8 +4,9 @@ import { Footer } from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { listFavorites, type FavoriteEntry } from '../services/favorites';
+import { listMyComics, type CreatorComic } from '../services/creatorComics';
 
-import { BookOpen, Heart, Mail, Check, X } from 'lucide-react';
+import { BookOpen, Heart, Mail, Check, X, Settings2, Eye } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 export const Profile: React.FC = () => {
@@ -19,6 +20,11 @@ export const Profile: React.FC = () => {
   const [favorites, setFavorites] = useState<FavoriteEntry[]>([]);
   const [favLoading, setFavLoading] = useState(true);
   const [favError, setFavError] = useState(false);
+
+  // Karya milik author (tab KOMIK) — nyata dari tabel comics (M4).
+  const [myComics, setMyComics] = useState<CreatorComic[]>([]);
+  const [myComicsLoading, setMyComicsLoading] = useState(true);
+  const [myComicsError, setMyComicsError] = useState(false);
 
   // State edit nama panggilan.
   const [editingName, setEditingName] = useState(false);
@@ -38,8 +44,22 @@ export const Profile: React.FC = () => {
     return () => { cancelled = true; };
   }, [activeTab, isAuthor]);
 
+  // Muat karya milik author saat tab KOMIK aktif (M4).
+  useEffect(() => {
+    if (!isAuthor || activeTab !== 'KOMIK') return;
+    let cancelled = false;
+    listMyComics().then(({ data, error }) => {
+      if (cancelled) return;
+      setMyComics(data);
+      setMyComicsError(error);
+      setMyComicsLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [activeTab, isAuthor]);
+
   const showMainTab = () => {
     if (!isAuthor) setFavLoading(true);
+    else setMyComicsLoading(true);
     setActiveTab(isAuthor ? 'KOMIK' : 'FAVORIT');
   };
 
@@ -254,14 +274,67 @@ export const Profile: React.FC = () => {
             </div>
           </div>
         ) : isAuthor ? (
-          /* Tab KOMIK (Author) — backend unggah karya belum ada (M3), tampilkan empty state jujur */
-          <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
-            <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center">
-              <BookOpen size={28} className="text-primary" aria-hidden="true" />
+          /* Tab KOMIK (Author) — daftar karya nyata dari Supabase (M4) */
+          myComicsLoading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex flex-col gap-2 animate-pulse">
+                  <div className="aspect-3/4 w-full rounded-md bg-gray-300"></div>
+                  <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                </div>
+              ))}
             </div>
-            <h3 className="text-xl font-bold text-primary">{t('profile.comicsEmpty')}</h3>
-            <p className="text-sm text-gray-600 max-w-sm">{t('profile.comicsEmptyDesc')}</p>
-          </div>
+          ) : myComicsError ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+              <p className="text-sm text-red-500">{t('common.loadError')}</p>
+            </div>
+          ) : myComics.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+              <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center">
+                <BookOpen size={28} className="text-primary" aria-hidden="true" />
+              </div>
+              <h3 className="text-xl font-bold text-primary">{t('profile.comicsEmpty')}</h3>
+              <p className="text-sm text-gray-600 max-w-sm">{t('profile.comicsEmptyDesc')}</p>
+              <Link
+                to="/add-comic"
+                className="mt-2 px-5 py-2 bg-primary text-white font-bold rounded-full hover:bg-primary-hover transition-colors"
+              >
+                {t('profile.addComic')}
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {myComics.map((c) => (
+                <div key={c.id} className="flex flex-col gap-2">
+                  <Link to={`/comic/${c.id}`} className="group">
+                    <div className="aspect-3/4 w-full rounded-md overflow-hidden bg-gray-200 shadow-sm transition-transform duration-300 group-hover:scale-105">
+                      <img
+                        src={c.coverUrl || 'https://placehold.co/400x600'}
+                        alt={c.title}
+                        loading="lazy"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <h3 className="font-bold text-primary text-sm leading-tight truncate mt-2">{c.title}</h3>
+                  </Link>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      to={`/add-comic?comic=${c.id}`}
+                      className="flex items-center gap-1 text-xs font-bold text-primary border border-primary/40 rounded-full px-2.5 py-1 hover:bg-primary hover:text-white transition-colors"
+                    >
+                      <Settings2 size={13} aria-hidden="true" /> {t('profile.manage')}
+                    </Link>
+                    <Link
+                      to={`/comic/${c.id}`}
+                      className="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-primary transition-colors"
+                    >
+                      <Eye size={13} aria-hidden="true" /> {t('detail.readChapter')}
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
         ) : (
           /* Tab FAVORIT (Reader) — data sungguhan dari tabel favorites */
           <div className="flex flex-col gap-4">

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { fetchMangaDetail } from '../services/api';
 import { ChevronLeft, Eye, Bookmark, BookOpen, AlertCircle, Heart } from 'lucide-react';
 import { Navbar } from '../components/Navbar';
@@ -8,6 +8,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { isFavorite, addFavorite, removeFavorite } from '../services/favorites';
 import { recordView } from '../services/history';
+import { isKitsuId, getCreatorComic, type CreatorComic, type CreatorChapter } from '../services/creatorComics';
 import { CommentSection } from '../components/CommentSection';
 import type { Comic } from '../types/comic';
 
@@ -16,7 +17,12 @@ export const ComicDetail: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { user } = useAuth();
+
+  const isCreator = id ? !isKitsuId(id) : false;
+
   const [manga, setManga] = useState<Comic | null>(null);
+  const [creator, setCreator] = useState<CreatorComic | null>(null);
+  const [chapters, setChapters] = useState<CreatorChapter[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
@@ -24,34 +30,58 @@ export const ComicDetail: React.FC = () => {
   const [favBusy, setFavBusy] = useState(false);
   const [favError, setFavError] = useState('');
 
+  // Muat data sesuai sumber: katalog Kitsu (numerik) atau karya creator (UUID).
   useEffect(() => {
     if (!id) return;
     let cancelled = false;
-    fetchMangaDetail(id).then(({ data, error: hasError }) => {
-      if (cancelled) return;
-      setManga(data);
-      setError(hasError);
-      setLoading(false);
-    });
+    if (isKitsuId(id)) {
+      fetchMangaDetail(id).then(({ data, error: hasError }) => {
+        if (cancelled) return;
+        setManga(data);
+        setError(hasError);
+        setLoading(false);
+      });
+    } else {
+      getCreatorComic(id).then(({ data, chapters: ch, error: hasError }) => {
+        if (cancelled) return;
+        setCreator(data);
+        setChapters(ch);
+        setError(hasError);
+        setLoading(false);
+      });
+    }
     return () => { cancelled = true; };
   }, [id, reloadKey]);
+
+  // Nilai tampil terpadu untuk kedua sumber.
+  const comicId = id ?? '';
+  const title = isCreator ? (creator?.title ?? '') : (manga?.title ?? '');
+  const realCover = isCreator
+    ? (creator?.coverUrl || null)
+    : (manga?.images?.webp?.large_image_url || manga?.images?.jpg?.large_image_url || null);
+  const coverUrl = realCover || 'https://placehold.co/400x600';
+  const synopsis = isCreator ? (creator?.description ?? '') : (manga?.synopsis ?? '');
+  const authorLabel = isCreator ? (creator?.authorName ?? '') : (manga?.authors.map((a) => a.name).join(', ') ?? '');
+  const genreList = isCreator
+    ? (creator?.genres ?? []).map((name, i) => ({ key: `g-${i}`, name }))
+    : (manga?.genres ?? []).map((g) => ({ key: String(g.mal_id), name: g.name }));
+  const hasData = isCreator ? creator !== null : manga !== null;
 
   // Cek status favorit komik ini untuk pengguna yang login.
   useEffect(() => {
     if (!id || !user) return;
     let cancelled = false;
     isFavorite(id).then((fav) => {
-      if (!cancelled) setIsFav(fav);
+      if (cancelled) setIsFav(fav);
     });
     return () => { cancelled = true; };
   }, [id, user]);
 
   // Catat riwayat baca (tanpa setState lokal — hanya memicu tulis ke Supabase).
   useEffect(() => {
-    if (!manga || !user) return;
-    const cover = manga.images?.webp?.large_image_url || manga.images?.jpg?.large_image_url || null;
-    recordView({ comicId: String(manga.mal_id), title: manga.title, cover });
-  }, [manga, user]);
+    if (!user || !comicId || !title) return;
+    recordView({ comicId, title, cover: realCover });
+  }, [comicId, title, realCover, user]);
 
   const handleRetry = () => {
     setLoading(true);
@@ -60,17 +90,15 @@ export const ComicDetail: React.FC = () => {
   };
 
   const handleToggleFavorite = async () => {
-    if (!user || !manga) return;
+    if (!user || !comicId || !title) return;
     setFavBusy(true);
     setFavError('');
-    const comicId = String(manga.mal_id);
     if (isFav) {
       const { error: removeError } = await removeFavorite(comicId);
       if (removeError) setFavError(removeError);
       else setIsFav(false);
     } else {
-      const cover = manga.images?.webp?.large_image_url || manga.images?.jpg?.large_image_url || null;
-      const { error: addError } = await addFavorite({ comicId, title: manga.title, cover });
+      const { error: addError } = await addFavorite({ comicId, title, cover: realCover });
       if (addError) setFavError(addError);
       else setIsFav(true);
     }
@@ -81,21 +109,16 @@ export const ComicDetail: React.FC = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col text-left">
         <Navbar />
-        {/* Skeleton Hero Header */}
         <div className="w-full h-64 md:h-80 bg-gray-300 animate-pulse"></div>
         <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 -mt-32 relative z-10 flex flex-col items-center animate-pulse">
-          {/* Skeleton Cover */}
           <div className="w-48 h-72 rounded-xl bg-gray-400 mb-6 border-4 border-background"></div>
-          {/* Skeleton Title & Info */}
           <div className="w-3/4 h-10 bg-gray-300 rounded mb-4"></div>
           <div className="w-1/2 h-6 bg-gray-300 rounded mb-8"></div>
-
           <div className="flex gap-2 mb-6">
             <div className="w-20 h-6 bg-gray-300 rounded-full"></div>
             <div className="w-20 h-6 bg-gray-300 rounded-full"></div>
             <div className="w-20 h-6 bg-gray-300 rounded-full"></div>
           </div>
-
           <div className="w-full max-w-3xl flex flex-col gap-3 mb-8">
             <div className="w-full h-4 bg-gray-300 rounded"></div>
             <div className="w-full h-4 bg-gray-300 rounded"></div>
@@ -131,7 +154,7 @@ export const ComicDetail: React.FC = () => {
     );
   }
 
-  if (!manga) {
+  if (!hasData) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center flex-col gap-4">
         <p className="text-xl font-bold text-red-500">{t('detail.notFound')}</p>
@@ -139,9 +162,6 @@ export const ComicDetail: React.FC = () => {
       </div>
     );
   }
-
-  const coverUrl = manga.images?.webp?.large_image_url || manga.images?.jpg?.large_image_url || "https://placehold.co/400x600";
-  const authorNames = manga.authors.map(a => a.name).join(', ');
 
   return (
     <div className="min-h-screen bg-background flex flex-col text-left">
@@ -165,22 +185,29 @@ export const ComicDetail: React.FC = () => {
       <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 -mt-32 relative z-10 flex flex-col items-center">
         {/* Cover */}
         <div className="w-48 h-72 rounded-xl overflow-hidden shadow-2xl mb-6 border-4 border-background">
-          <img src={coverUrl} alt={manga.title} className="w-full h-full object-cover" />
+          <img src={coverUrl} alt={title} className="w-full h-full object-cover" />
         </div>
+
+        {/* Penanda karya creator agar tidak tertukar dengan katalog Kitsu */}
+        {isCreator && (
+          <span className="mb-3 px-3 py-1 bg-surface text-primary text-xs font-bold rounded-full border border-primary/20">
+            {t('detail.creatorBadge')}
+          </span>
+        )}
 
         {/* Title & Info */}
         <h1 className="text-3xl md:text-4xl font-bold font-heading text-primary text-center mb-2">
-          {manga.title}
+          {title}
         </h1>
         <p className="text-gray-600 mb-4 text-center font-medium">
-          {t('detail.author')}: {authorNames || t('detail.unknownAuthor')}
+          {isCreator ? t('detail.creatorBy') : t('detail.author')}: {authorLabel || t('detail.unknownAuthor')}
         </p>
 
-        {manga.genres.length > 0 && (
+        {genreList.length > 0 && (
           <div className="flex flex-wrap justify-center gap-2 mb-6">
-            {manga.genres.map((g) => (
+            {genreList.map((g) => (
               <span
-                key={g.mal_id}
+                key={g.key}
                 className="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full border border-primary/20"
               >
                 {g.name}
@@ -189,15 +216,25 @@ export const ComicDetail: React.FC = () => {
           </div>
         )}
 
+        {/* Statistik — jujur per sumber */}
         <div className="flex items-center gap-6 mb-6 text-sm font-semibold text-gray-700">
-          <div className="flex items-center gap-2">
-            <Eye size={18} className="text-primary" aria-hidden="true" />
-            {t('detail.views')}: {manga.members.toLocaleString()}
-          </div>
-          <div className="flex items-center gap-2">
-            <Bookmark size={18} className="text-primary" aria-hidden="true" />
-            {t('detail.favorites')}: {manga.favorites.toLocaleString()}
-          </div>
+          {isCreator ? (
+            <div className="flex items-center gap-2">
+              <BookOpen size={18} className="text-primary" aria-hidden="true" />
+              {t('detail.chapters')}: {chapters.length}
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-2">
+                <Eye size={18} className="text-primary" aria-hidden="true" />
+                {t('detail.views')}: {manga?.members.toLocaleString()}
+              </div>
+              <div className="flex items-center gap-2">
+                <Bookmark size={18} className="text-primary" aria-hidden="true" />
+                {t('detail.favorites')}: {manga?.favorites.toLocaleString()}
+              </div>
+            </>
+          )}
         </div>
 
         {user && (
@@ -221,24 +258,52 @@ export const ComicDetail: React.FC = () => {
         )}
 
         <p className="text-center text-gray-800 leading-relaxed mb-12 max-w-3xl">
-          {manga.synopsis || t('detail.synopsisEmpty')}
+          {synopsis || t('detail.synopsisEmpty')}
         </p>
 
-        {/* Chapter list — hanya tampil jika data chapter benar-benar ada.
-            Komik Kitsu tidak punya chapter di KomikinAja, jadi tampilkan info jujur. */}
+        {/* Chapter list — dua sumber */}
         <div className="w-full flex flex-col gap-3 mb-16">
           <h3 className="font-bold text-xl text-gray-700 flex items-center gap-2">
             <BookOpen size={20} className="text-primary" aria-hidden="true" />
             {t('detail.chapters')}
           </h3>
-          <div className="bg-surface/70 border border-primary/10 rounded-xl p-6 flex flex-col gap-1">
-            <p className="font-semibold text-primary">{t('detail.noChapters')}</p>
-            <p className="text-sm text-gray-600">{t('detail.noChaptersDesc')}</p>
-          </div>
+
+          {isCreator ? (
+            chapters.length === 0 ? (
+              <div className="bg-surface/70 border border-primary/10 rounded-xl p-6 flex flex-col gap-1">
+                <p className="font-semibold text-primary">{t('detail.noCreatorChapters')}</p>
+                <p className="text-sm text-gray-600">{t('detail.noCreatorChaptersDesc')}</p>
+              </div>
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {chapters.map((c) => (
+                  <li key={c.id}>
+                    <Link
+                      to={`/read/${comicId}/${c.number}`}
+                      className="flex items-center justify-between bg-surface/70 hover:bg-surface border border-primary/10 rounded-xl px-5 py-4 transition-colors group"
+                    >
+                      <span className="font-semibold text-primary">
+                        {t('detail.chapterWord')} {c.number}
+                        {c.title ? ` — ${c.title}` : ''}
+                      </span>
+                      <span className="text-sm text-gray-500 group-hover:text-primary">
+                        {t('detail.readChapter')} →
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )
+          ) : (
+            <div className="bg-surface/70 border border-primary/10 rounded-xl p-6 flex flex-col gap-1">
+              <p className="font-semibold text-primary">{t('detail.noChapters')}</p>
+              <p className="text-sm text-gray-600">{t('detail.noChaptersDesc')}</p>
+            </div>
+          )}
         </div>
 
-        {/* Comments — komentar nyata per komik (M3) */}
-        <CommentSection comicId={String(manga.mal_id)} />
+        {/* Comments — komentar nyata per komik (M3), berlaku untuk kedua sumber */}
+        <CommentSection comicId={comicId} />
       </main>
 
       <Footer />

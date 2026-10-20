@@ -7,6 +7,7 @@ import { Search, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { fetchManga, fetchTopManga } from '../services/api';
 import { listHistory, type HistoryEntry } from '../services/history';
+import { listPublishedComics, type CreatorComic } from '../services/creatorComics';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import type { Comic } from '../types/comic';
@@ -31,6 +32,7 @@ export const Home: React.FC = () => {
   const [banners, setBanners] = useState(heroBanners);
   const [reloadKey, setReloadKey] = useState(0);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [creatorWorks, setCreatorWorks] = useState<CreatorComic[]>([]);
   const navigate = useNavigate();
 
   // Auto-slide banner
@@ -110,6 +112,16 @@ export const Home: React.FC = () => {
     });
     return () => { cancelled = true; };
   }, [user, reloadKey]);
+
+  // Muat karya creator agar berdampingan dengan katalog Kitsu (M4).
+  useEffect(() => {
+    let cancelled = false;
+    listPublishedComics(6).then(({ data }) => {
+      if (cancelled) return;
+      setCreatorWorks(data);
+    });
+    return () => { cancelled = true; };
+  }, [reloadKey]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -200,6 +212,31 @@ export const Home: React.FC = () => {
                     />
                   </div>
                   <h3 className="font-bold text-primary text-sm leading-tight truncate">{h.title}</h3>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Karya Kreator — karya author berdampingan dengan katalog Kitsu (M4) */}
+        {creatorWorks.length > 0 && (
+          <div className="flex flex-col gap-4 text-left">
+            <h2 className="text-2xl font-bold font-heading text-primary">{t('home.creatorWorks')}</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {creatorWorks.map((c) => (
+                <Link key={c.id} to={`/comic/${c.id}`} className="group flex flex-col gap-2">
+                  <div className="aspect-3/4 w-full rounded-md overflow-hidden bg-gray-200 shadow-sm transition-transform duration-300 group-hover:scale-105 relative">
+                    <img
+                      src={c.coverUrl || 'https://placehold.co/400x600'}
+                      alt={c.title}
+                      loading="lazy"
+                      className="w-full h-full object-cover"
+                    />
+                    <span className="absolute top-2 left-2 px-2 py-0.5 bg-primary/90 text-white text-[10px] font-bold rounded-full backdrop-blur-sm">
+                      {t('detail.creatorBadge')}
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-primary text-sm leading-tight truncate">{c.title}</h3>
                 </Link>
               ))}
             </div>
