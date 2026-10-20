@@ -6,7 +6,9 @@ import { heroBanners } from '../data/dummy';
 import { Search, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { fetchManga, fetchTopManga } from '../services/api';
+import { listHistory, type HistoryEntry } from '../services/history';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import type { Comic } from '../types/comic';
 
 interface SectionState {
@@ -19,6 +21,7 @@ const emptySection: SectionState = { mangas: [], loading: true, error: false };
 
 export const Home: React.FC = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [rekomendasi, setRekomendasi] = useState<SectionState>(emptySection);
   const [terakhirUpdate, setTerakhirUpdate] = useState<SectionState>(emptySection);
   const [shounen, setShounen] = useState<SectionState>(emptySection);
@@ -27,6 +30,7 @@ export const Home: React.FC = () => {
   const [currentBanner, setCurrentBanner] = useState(0);
   const [banners, setBanners] = useState(heroBanners);
   const [reloadKey, setReloadKey] = useState(0);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
   const navigate = useNavigate();
 
   // Auto-slide banner
@@ -95,6 +99,17 @@ export const Home: React.FC = () => {
       navigate(`/category?q=${encodeURIComponent(searchQuery)}`);
     }
   };
+
+  // Ambil riwayat baca untuk section "Lanjutkan membaca" (M3).
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    listHistory(6).then(({ data }) => {
+      if (cancelled) return;
+      setHistory(data);
+    });
+    return () => { cancelled = true; };
+  }, [user, reloadKey]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -168,6 +183,28 @@ export const Home: React.FC = () => {
             className="w-full pl-12 pr-4 py-4 rounded-xl border-2 border-gray-200 bg-transparent focus:border-primary focus:ring-0 outline-none transition-colors"
           />
         </form>
+
+        {/* Lanjutkan membaca — hanya tampil jika ada riwayat (M3) */}
+        {history.length > 0 && (
+          <div className="flex flex-col gap-4 text-left">
+            <h2 className="text-2xl font-bold font-heading text-primary">{t('home.continueReading')}</h2>
+            <div className="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
+              {history.map((h) => (
+                <Link key={h.comicId} to={`/comic/${h.comicId}`} className="flex flex-col gap-2 group w-32 shrink-0">
+                  <div className="aspect-3/4 w-full rounded-md overflow-hidden bg-gray-200 shadow-sm transition-transform duration-300 group-hover:scale-105">
+                    <img
+                      src={h.cover || 'https://placehold.co/400x600'}
+                      alt={h.title}
+                      loading="lazy"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <h3 className="font-bold text-primary text-sm leading-tight truncate">{h.title}</h3>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Sections */}
         <Section

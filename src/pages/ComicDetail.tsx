@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchMangaDetail } from '../services/api';
-import { ChevronLeft, Eye, Bookmark, BookOpen, MessageCircle, AlertCircle, Heart } from 'lucide-react';
+import { ChevronLeft, Eye, Bookmark, BookOpen, AlertCircle, Heart } from 'lucide-react';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { isFavorite, addFavorite, removeFavorite } from '../services/favorites';
+import { recordView } from '../services/history';
+import { CommentSection } from '../components/CommentSection';
 import type { Comic } from '../types/comic';
 
 export const ComicDetail: React.FC = () => {
@@ -43,6 +45,13 @@ export const ComicDetail: React.FC = () => {
     });
     return () => { cancelled = true; };
   }, [id, user]);
+
+  // Catat riwayat baca (tanpa setState lokal — hanya memicu tulis ke Supabase).
+  useEffect(() => {
+    if (!manga || !user) return;
+    const cover = manga.images?.webp?.large_image_url || manga.images?.jpg?.large_image_url || null;
+    recordView({ comicId: String(manga.mal_id), title: manga.title, cover });
+  }, [manga, user]);
 
   const handleRetry = () => {
     setLoading(true);
@@ -228,16 +237,8 @@ export const ComicDetail: React.FC = () => {
           </div>
         </div>
 
-        {/* Comments — hanya info status, form dan data dummy dihapus */}
-        <div className="w-full flex flex-col gap-4 mb-16">
-          <h3 className="font-bold text-xl text-gray-700 flex items-center gap-2">
-            <MessageCircle size={20} className="text-primary" aria-hidden="true" />
-            {t('detail.comments')}
-          </h3>
-          <div className="bg-surface/70 border border-primary/10 rounded-xl p-6 flex flex-col gap-1">
-            <p className="text-sm text-gray-600">{t('detail.commentsSoon')}</p>
-          </div>
-        </div>
+        {/* Comments — komentar nyata per komik (M3) */}
+        <CommentSection comicId={String(manga.mal_id)} />
       </main>
 
       <Footer />

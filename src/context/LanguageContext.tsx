@@ -41,6 +41,7 @@ export const translations: Translations = {
     'home.shounen': 'Shounen Manga Top 10',
     'home.fantasy': 'Fantasi Manga Top 10',
     'home.viewMore': 'Lihat Lebih Banyak',
+    'home.continueReading': 'Lanjutkan Membaca',
 
     'category.title': 'Kategori',
     'category.count': '{count} Serial Ditampilkan',
@@ -67,6 +68,13 @@ export const translations: Translations = {
     'detail.synopsisEmpty': 'Tidak ada sinopsis tersedia.',
     'detail.addFavorite': 'Tambah ke Favorit',
     'detail.removeFavorite': 'Hapus dari Favorit',
+
+    'comments.title': 'Komentar',
+    'comments.empty': 'Belum ada komentar. Jadilah yang pertama berkomentar!',
+    'comments.placeholder': 'Tulis komentarmu...',
+    'comments.post': 'Kirim',
+    'comments.delete': 'Hapus komentar',
+    'comments.loginToComment': 'Masuk untuk ikut berkomentar.',
 
     'read.notAvailableTitle': 'Konten chapter ini belum tersedia.',
     'read.notAvailableDesc':
@@ -169,6 +177,7 @@ export const translations: Translations = {
     'home.shounen': 'Top 10 Shounen Manga',
     'home.fantasy': 'Top 10 Fantasy Manga',
     'home.viewMore': 'View More',
+    'home.continueReading': 'Continue Reading',
 
     'category.title': 'Categories',
     'category.count': '{count} Series Shown',
@@ -195,6 +204,13 @@ export const translations: Translations = {
     'detail.synopsisEmpty': 'No synopsis available.',
     'detail.addFavorite': 'Add to Favorites',
     'detail.removeFavorite': 'Remove from Favorites',
+
+    'comments.title': 'Comments',
+    'comments.empty': 'No comments yet. Be the first to comment!',
+    'comments.placeholder': 'Write your comment...',
+    'comments.post': 'Post',
+    'comments.delete': 'Delete comment',
+    'comments.loginToComment': 'Log in to join the discussion.',
 
     'read.notAvailableTitle': 'This chapter content is not available yet.',
     'read.notAvailableDesc':
