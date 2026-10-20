@@ -154,7 +154,7 @@ export const fetchManga = async (
   try {
     const actualLimit = Math.min(limit, 20);
     const offset = (page - 1) * actualLimit;
-    let url = `${BASE_URL}/manga?page[limit]=${actualLimit}&page[offset]=${offset}&sort=${sortOrder}`;
+    let url = `${BASE_URL}/manga?page[limit]=${actualLimit}&page[offset]=${offset}&sort=${sortOrder}&include=genres`;
 
     if (query) {
       url += `&filter[text]=${encodeURIComponent(query)}`;
@@ -185,7 +185,7 @@ export const fetchTopManga = async (limit = 10): Promise<{ data: Comic[]; error:
   try {
     const actualLimit = Math.min(limit, 20);
     const data = await fetchWithRetry<KitsuListResponse>(
-      `${BASE_URL}/manga?page[limit]=${actualLimit}&sort=-averageRating`,
+      `${BASE_URL}/manga?page[limit]=${actualLimit}&sort=-averageRating&include=genres`,
     );
     return { data: data.data ? data.data.map((item) => mapKitsuToAppFormat(item)) : [], error: false };
   } catch (error) {

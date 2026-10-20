@@ -6,6 +6,7 @@ import { heroBanners } from '../data/dummy';
 import { Search, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { fetchManga, fetchTopManga } from '../services/api';
+import { getPersonalizedRecommendations } from '../services/recommend';
 import { listHistory, type HistoryEntry } from '../services/history';
 import { listPublishedComics, type CreatorComic } from '../services/creatorComics';
 import { useLanguage } from '../context/LanguageContext';
@@ -54,22 +55,24 @@ export const Home: React.FC = () => {
     setCurrentBanner((prev) => (prev === 0 ? banners.length - 1 : prev - 1));
   };
 
-  // Muat semua data paralel — tidak perlu berurutan
+  // Muat semua data paralel — tidak perlu berurutan.
+  // Rekomendasi dipersonalisasi dari riwayat baca (M5); banner hero tetap rating tertinggi.
   useEffect(() => {
     let cancelled = false;
     Promise.all([
+      getPersonalizedRecommendations(6),
       fetchTopManga(6),
       fetchManga(1, '', 6),
       fetchManga(1, 'shounen', 6),
       fetchManga(1, 'fantasy', 6),
-    ]).then(([rec, update, shounenData, fantasiData]) => {
+    ]).then(([rec, bannerTop, update, shounenData, fantasiData]) => {
       if (cancelled) return;
 
       setRekomendasi({ mangas: rec.data, loading: false, error: rec.error });
 
       // Build dynamic banners from top manga with real cover images
-      if (rec.data.length >= 3) {
-        const dynamicBanners = rec.data.slice(0, 3).map((manga, idx) => ({
+      if (bannerTop.data.length >= 3) {
+        const dynamicBanners = bannerTop.data.slice(0, 3).map((manga, idx) => ({
           id: idx + 1,
           title: manga.title,
           description: manga.synopsis || "Komik populer yang wajib kamu baca di KomikinAja!",
