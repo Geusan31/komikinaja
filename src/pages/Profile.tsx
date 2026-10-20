@@ -5,8 +5,9 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { listFavorites, type FavoriteEntry } from '../services/favorites';
 import { listMyComics, type CreatorComic } from '../services/creatorComics';
+import { getAuthorStats, type WorkStat } from '../services/analytics';
 
-import { BookOpen, Heart, Mail, Check, X, Settings2, Eye } from 'lucide-react';
+import { BookOpen, Heart, Mail, Check, X, Settings2, Eye, BarChart3, ShieldCheck, Users } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 export const Profile: React.FC = () => {
@@ -14,6 +15,7 @@ export const Profile: React.FC = () => {
   const { language, toggleLanguage, t } = useLanguage();
   const navigate = useNavigate();
   const isAuthor = user?.role === 'author';
+  const isAdmin = user?.isAdmin ?? false;
   const [activeTab, setActiveTab] = useState(isAuthor ? 'KOMIK' : 'FAVORIT');
 
   // Data favorit sungguhan dari Supabase (hanya untuk pembaca).
@@ -25,6 +27,12 @@ export const Profile: React.FC = () => {
   const [myComics, setMyComics] = useState<CreatorComic[]>([]);
   const [myComicsLoading, setMyComicsLoading] = useState(true);
   const [myComicsError, setMyComicsError] = useState(false);
+
+  // Statistik karya author (A2) — tab ANALITIK.
+  const [statWorks, setStatWorks] = useState<WorkStat[]>([]);
+  const [statFollowers, setStatFollowers] = useState(0);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState(false);
 
   // State edit nama panggilan.
   const [editingName, setEditingName] = useState(false);
@@ -53,6 +61,21 @@ export const Profile: React.FC = () => {
       setMyComics(data);
       setMyComicsError(error);
       setMyComicsLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [activeTab, isAuthor]);
+
+  // Muat statistik saat tab ANALITIK dibuka (A2).
+  // Reset `statsLoading` dilakukan di handler klik tab (bukan di efek ini).
+  useEffect(() => {
+    if (!isAuthor || activeTab !== 'ANALITIK') return;
+    let cancelled = false;
+    getAuthorStats().then(({ works, followers, error }) => {
+      if (cancelled) return;
+      setStatWorks(works);
+      setStatFollowers(followers);
+      setStatsError(error);
+      setStatsLoading(false);
     });
     return () => { cancelled = true; };
   }, [activeTab, isAuthor]);
@@ -114,13 +137,29 @@ export const Profile: React.FC = () => {
           <div className="flex gap-8">
             <button
               onClick={showMainTab}
-              aria-pressed={activeTab !== 'AKUN'}
+              aria-pressed={activeTab !== 'AKUN' && activeTab !== 'ANALITIK'}
               className={`pb-4 font-bold text-sm tracking-widest uppercase transition-colors ${
-                activeTab !== 'AKUN' ? 'text-primary border-b-4 border-primary' : 'text-gray-500 hover:text-gray-800'
+                activeTab !== 'AKUN' && activeTab !== 'ANALITIK'
+                  ? 'text-primary border-b-4 border-primary'
+                  : 'text-gray-500 hover:text-gray-800'
               }`}
             >
               {isAuthor ? t('profile.comic') : t('profile.favorite')}
             </button>
+            {isAuthor && (
+              <button
+                onClick={() => { setStatsLoading(true); setActiveTab('ANALITIK'); }}
+                aria-pressed={activeTab === 'ANALITIK'}
+                className={`pb-4 font-bold text-sm tracking-widest uppercase transition-colors flex items-center gap-1.5 ${
+                  activeTab === 'ANALITIK'
+                    ? 'text-primary border-b-4 border-primary'
+                    : 'text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                <BarChart3 size={15} aria-hidden="true" />
+                {t('profile.analytics')}
+              </button>
+            )}
             <button
               onClick={() => setActiveTab('AKUN')}
               aria-pressed={activeTab === 'AKUN'}
@@ -132,11 +171,22 @@ export const Profile: React.FC = () => {
             </button>
           </div>
 
-          {isAuthor && activeTab === 'KOMIK' && (
-            <Link to="/add-comic" className="px-4 py-2 border-2 border-primary text-primary rounded-full text-sm font-bold hover:bg-primary hover:text-white transition-colors mb-2">
-              {t('profile.addComic')}
-            </Link>
-          )}
+          <div className="flex items-center gap-2 mb-2">
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className="px-4 py-2 border-2 border-red-500 text-red-500 rounded-full text-sm font-bold hover:bg-red-500 hover:text-white transition-colors flex items-center gap-1.5"
+              >
+                <ShieldCheck size={15} aria-hidden="true" />
+                {t('profile.adminDashboard')}
+              </Link>
+            )}
+            {isAuthor && activeTab === 'KOMIK' && (
+              <Link to="/add-comic" className="px-4 py-2 border-2 border-primary text-primary rounded-full text-sm font-bold hover:bg-primary hover:text-white transition-colors">
+                {t('profile.addComic')}
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Tab Content */}
@@ -273,6 +323,78 @@ export const Profile: React.FC = () => {
               </button>
             </div>
           </div>
+        ) : activeTab === 'ANALITIK' ? (
+          /* Tab ANALITIK (Author) — A2: jumlah pembaca, follower, chapter populer */
+          statsLoading ? (
+            <div className="flex flex-col gap-4">
+              <div className="h-24 bg-gray-300 rounded-2xl animate-pulse"></div>
+              <div className="h-40 bg-gray-300 rounded-xl animate-pulse"></div>
+            </div>
+          ) : statsError ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+              <p className="text-sm text-red-500">{t('common.loadError')}</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-6">
+              {/* Ringkasan follower */}
+              <div className="bg-surface p-6 rounded-2xl flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <Users size={24} className="text-primary" aria-hidden="true" />
+                </div>
+                <div className="flex flex-col text-left">
+                  <span className="text-3xl font-bold text-primary leading-none">{statFollowers}</span>
+                  <span className="text-sm text-gray-600 mt-1">{t('profile.totalFollowers')}</span>
+                </div>
+              </div>
+
+              {/* Statistik per karya */}
+              <h3 className="font-bold text-lg text-primary text-left">{t('profile.workStats')}</h3>
+              {statWorks.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 gap-2 text-center">
+                  <p className="text-sm text-gray-600">{t('profile.comicsEmptyDesc')}</p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {statWorks.map((w) => (
+                    <div
+                      key={w.comicId}
+                      className="bg-surface/70 border border-primary/10 rounded-xl p-4 flex gap-4 items-center"
+                    >
+                      <Link to={`/comic/${w.comicId}`} className="w-14 h-20 rounded-md overflow-hidden bg-gray-200 shrink-0">
+                        <img
+                          src={w.coverUrl || 'https://placehold.co/400x600'}
+                          alt={w.title}
+                          loading="lazy"
+                          className="w-full h-full object-cover"
+                        />
+                      </Link>
+                      <div className="flex-1 min-w-0 flex flex-col gap-1 text-left">
+                        <span className="font-bold text-primary truncate">{w.title}</span>
+                        <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-gray-600">
+                          <span className="flex items-center gap-1.5">
+                            <Eye size={15} className="text-primary" aria-hidden="true" />
+                            {t('profile.readers')}: <b className="text-primary">{w.uniqueReaders}</b>
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <BookOpen size={15} className="text-primary" aria-hidden="true" />
+                            {t('profile.totalReads')}: <b className="text-primary">{w.totalReads}</b>
+                          </span>
+                        </div>
+                        <span className="text-sm text-gray-600">
+                          {t('profile.topChapter')}:{' '}
+                          <b className="text-primary">
+                            {w.topChapterNumber !== null
+                              ? `${t('detail.chapterWord')} ${w.topChapterNumber} (${w.topChapterReads})`
+                              : t('profile.noDataYet')}
+                          </b>
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
         ) : isAuthor ? (
           /* Tab KOMIK (Author) — daftar karya nyata dari Supabase (M4) */
           myComicsLoading ? (

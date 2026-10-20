@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { BannedScreen } from './components/BannedScreen';
 import { Home } from './pages/Home';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
@@ -13,6 +14,7 @@ import { Profile } from './pages/Profile';
 import { ComicDetail } from './pages/ComicDetail';
 import { ReadingMode } from './pages/ReadingMode';
 import { AddComic } from './pages/AddComic';
+import { Admin } from './pages/Admin';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
@@ -27,9 +29,27 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // Akun yang diblokir admin tidak boleh mengakses rute manapun (S1).
+  if (user.isBanned) {
+    return <BannedScreen />;
+  }
+
   if (user && !user.role && location.pathname !== '/role-selection') {
     return <Navigate to="/role-selection" replace />;
   }
+
+  return <>{children}</>;
+};
+
+/** Rute khusus admin — selain isBanned/role, harus is_admin. */
+const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) return null;
+  if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
+  if (user.isBanned) return <BannedScreen />;
+  if (!user.isAdmin) return <Navigate to="/profile" replace />;
 
   return <>{children}</>;
 };
@@ -74,6 +94,7 @@ function AppRoutes() {
       <Route path="/add-comic" element={<ProtectedRoute><ErrorBoundary sectionName="tambah komik"><AddComic /></ErrorBoundary></ProtectedRoute>} />
       <Route path="/comic/:id" element={<ProtectedRoute><ErrorBoundary sectionName="detail komik"><ComicDetail /></ErrorBoundary></ProtectedRoute>} />
       <Route path="/read/:id/:episode" element={<ProtectedRoute><ErrorBoundary sectionName="mode baca"><ReadingMode /></ErrorBoundary></ProtectedRoute>} />
+      <Route path="/admin" element={<AdminRoute><ErrorBoundary sectionName="admin"><Admin /></ErrorBoundary></AdminRoute>} />
     </Routes>
   );
 }

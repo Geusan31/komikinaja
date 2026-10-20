@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { fetchMangaDetail } from '../services/api';
-import { ChevronLeft, Eye, Bookmark, BookOpen, AlertCircle, Heart } from 'lucide-react';
+import { ChevronLeft, Eye, Bookmark, BookOpen, AlertCircle, Heart, UserPlus } from 'lucide-react';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { isFavorite, addFavorite, removeFavorite } from '../services/favorites';
+import { isFollowing, followAuthor, unfollowAuthor, followerCount } from '../services/followers';
 import { recordView } from '../services/history';
 import { isKitsuId, getCreatorComic, type CreatorComic, type CreatorChapter } from '../services/creatorComics';
 import { CommentSection } from '../components/CommentSection';
@@ -29,6 +30,12 @@ export const ComicDetail: React.FC = () => {
   const [isFav, setIsFav] = useState(false);
   const [favBusy, setFavBusy] = useState(false);
   const [favError, setFavError] = useState('');
+
+  // Mengikuti author (A2) — hanya untuk karya creator.
+  const [isFollow, setIsFollow] = useState(false);
+  const [followBusy, setFollowBusy] = useState(false);
+  const [followError, setFollowError] = useState('');
+  const [followerTotal, setFollowerTotal] = useState<number | null>(null);
 
   // Muat data sesuai sumber: katalog Kitsu (numerik) atau karya creator (UUID).
   useEffect(() => {
@@ -77,6 +84,22 @@ export const ComicDetail: React.FC = () => {
     return () => { cancelled = true; };
   }, [id, user]);
 
+  // Muat status ikut & jumlah follower untuk karya creator (A2).
+  useEffect(() => {
+    if (!isCreator || !creator?.authorId) return;
+    let cancelled = false;
+    const authorId = creator.authorId;
+    followerCount(authorId).then((n) => {
+      if (!cancelled) setFollowerTotal(n);
+    });
+    if (user) {
+      isFollowing(authorId).then((f) => {
+        if (!cancelled) setIsFollow(f);
+      });
+    }
+    return () => { cancelled = true; };
+  }, [isCreator, creator?.authorId, user]);
+
   // Catat riwayat baca (tanpa setState lokal — hanya memicu tulis ke Supabase).
   useEffect(() => {
     if (!user || !comicId || !title) return;
@@ -103,6 +126,28 @@ export const ComicDetail: React.FC = () => {
       else setIsFav(true);
     }
     setFavBusy(false);
+  };
+
+  const handleToggleFollow = async () => {
+    if (!user || !creator?.authorId) return;
+    setFollowBusy(true);
+    setFollowError('');
+    if (isFollow) {
+      const { error: unfollowErr } = await unfollowAuthor(creator.authorId);
+      if (unfollowErr) setFollowError(unfollowErr);
+      else {
+        setIsFollow(false);
+        setFollowerTotal((n) => (n === null ? n : Math.max(0, n - 1)));
+      }
+    } else {
+      const { error: followErr } = await followAuthor(creator.authorId);
+      if (followErr) setFollowError(followErr);
+      else {
+        setIsFollow(true);
+        setFollowerTotal((n) => (n === null ? n : n + 1));
+      }
+    }
+    setFollowBusy(false);
   };
 
   if (loading) {
@@ -239,21 +284,44 @@ export const ComicDetail: React.FC = () => {
 
         {user && (
           <div className="flex flex-col items-center gap-2 mb-8">
-            <button
-              type="button"
-              onClick={handleToggleFavorite}
-              disabled={favBusy}
-              aria-pressed={isFav}
-              className={`px-6 py-2 rounded-full font-bold border-2 transition-colors flex items-center gap-2 disabled:opacity-60 ${
-                isFav
-                  ? 'bg-primary text-white border-primary'
-                  : 'bg-transparent text-primary border-primary hover:bg-primary hover:text-white'
-              }`}
-            >
-              <Heart size={18} className={isFav ? 'fill-white' : ''} aria-hidden="true" />
-              {isFav ? t('detail.removeFavorite') : t('detail.addFavorite')}
-            </button>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={handleToggleFavorite}
+                disabled={favBusy}
+                aria-pressed={isFav}
+                className={`px-6 py-2 rounded-full font-bold border-2 transition-colors flex items-center gap-2 disabled:opacity-60 ${
+                  isFav
+                    ? 'bg-primary text-white border-primary'
+                    : 'bg-transparent text-primary border-primary hover:bg-primary hover:text-white'
+                }`}
+              >
+                <Heart size={18} className={isFav ? 'fill-white' : ''} aria-hidden="true" />
+                {isFav ? t('detail.removeFavorite') : t('detail.addFavorite')}
+              </button>
+
+              {isCreator && creator && (
+                <button
+                  type="button"
+                  onClick={handleToggleFollow}
+                  disabled={followBusy}
+                  aria-pressed={isFollow}
+                  className={`px-6 py-2 rounded-full font-bold border-2 transition-colors flex items-center gap-2 disabled:opacity-60 ${
+                    isFollow
+                      ? 'bg-surface text-primary border-primary/40'
+                      : 'bg-primary text-white border-primary hover:bg-primary-hover'
+                  }`}
+                >
+                  <UserPlus size={18} aria-hidden="true" />
+                  {isFollow ? t('detail.unfollow') : t('detail.follow')}
+                  {followerTotal !== null && (
+                    <span className="ml-1 text-xs font-bold opacity-80">· {followerTotal}</span>
+                  )}
+                </button>
+              )}
+            </div>
             {favError && <p role="alert" className="text-red-500 text-xs">{favError}</p>}
+            {followError && <p role="alert" className="text-red-500 text-xs">{followError}</p>}
           </div>
         )}
 

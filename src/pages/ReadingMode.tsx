@@ -19,6 +19,7 @@ import {
   type CreatorComic,
   type CreatorChapter,
 } from '../services/creatorComics';
+import { recordChapterView } from '../services/analytics';
 
 const NIGHT_KEY = 'komikinaja_night';
 const getInitialNight = (): boolean =>
@@ -70,6 +71,8 @@ export const ReadingMode: React.FC = () => {
       setComic(data);
       setChapters(ch);
       setChapterTitle(current.title ?? '');
+      // Catat pembukaan chapter untuk analitik author (A2) — abaikan kegagalan.
+      await recordChapterView(cid, current.id);
       const { data: pageUrls, error } = await getChapterPages(current.id);
       if (cancelled) return false;
       if (error) return false;

@@ -15,6 +15,7 @@ export const isKitsuId = (id: string): boolean => /^\d+$/.test(id);
 
 export interface CreatorComic {
   id: string;
+  authorId: string;
   title: string;
   description: string | null;
   coverUrl: string | null;
@@ -43,6 +44,7 @@ interface ComicRow {
 
 const mapComic = (row: ComicRow): CreatorComic => ({
   id: row.id,
+  authorId: row.author_id,
   title: row.title,
   description: row.description,
   coverUrl: row.cover_url,

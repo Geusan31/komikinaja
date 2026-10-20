@@ -16,6 +16,10 @@ interface User {
   role: Role;
   /** Metode masuk ('email' | 'google' | ...), dari app_metadata Supabase. */
   provider: string;
+  /** Admin internal (untuk moderasi, S1). */
+  isAdmin: boolean;
+  /** Akun diblokir admin (S1) — diblokir dari seluruh rute terproteksi. */
+  isBanned: boolean;
 }
 
 interface AuthResult {
@@ -40,7 +44,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 /** Gabungkan data Supabase auth + baris profil menjadi tipe User aplikasi. */
-const buildUser = (authUser: SupabaseAuthUser, profile?: { username?: string | null; avatar_url?: string | null; role?: Role }): User => {
+const buildUser = (authUser: SupabaseAuthUser, profile?: { username?: string | null; avatar_url?: string | null; role?: Role; is_admin?: boolean; banned_at?: string | null }): User => {
   const email = authUser.email ?? '';
   const name =
     profile?.username ??
@@ -59,6 +63,8 @@ const buildUser = (authUser: SupabaseAuthUser, profile?: { username?: string | n
     avatar,
     role: profile?.role ?? null,
     provider: (authUser.app_metadata?.provider as string | undefined) ?? 'email',
+    isAdmin: profile?.is_admin ?? false,
+    isBanned: profile?.banned_at != null,
   };
 };
 
@@ -76,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const loadProfile = async (authUser: SupabaseAuthUser): Promise<User> => {
       const { data } = await client
         .from('profiles')
-        .select('username, avatar_url, role')
+        .select('username, avatar_url, role, is_admin, banned_at')
         .eq('id', authUser.id)
         .single();
       return buildUser(authUser, data ?? undefined);
