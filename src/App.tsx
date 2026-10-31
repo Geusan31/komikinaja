@@ -15,6 +15,10 @@ import { ComicDetail } from './pages/ComicDetail';
 import { ReadingMode } from './pages/ReadingMode';
 import { AddComic } from './pages/AddComic';
 import { Admin } from './pages/Admin';
+import { CommunityList } from './pages/CommunityList';
+import { CommunityDetail } from './pages/CommunityDetail';
+import { WalletPage } from './pages/WalletPage';
+import { CreatorProfile } from './pages/CreatorProfile';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
@@ -95,6 +99,10 @@ function AppRoutes() {
       <Route path="/comic/:id" element={<ProtectedRoute><ErrorBoundary sectionName="detail komik"><ComicDetail /></ErrorBoundary></ProtectedRoute>} />
       <Route path="/read/:id/:episode" element={<ProtectedRoute><ErrorBoundary sectionName="mode baca"><ReadingMode /></ErrorBoundary></ProtectedRoute>} />
       <Route path="/admin" element={<AdminRoute><ErrorBoundary sectionName="admin"><Admin /></ErrorBoundary></AdminRoute>} />
+      <Route path="/community" element={<ProtectedRoute><ErrorBoundary sectionName="komunitas"><CommunityList /></ErrorBoundary></ProtectedRoute>} />
+      <Route path="/community/:id" element={<ProtectedRoute><ErrorBoundary sectionName="detail komunitas"><CommunityDetail /></ErrorBoundary></ProtectedRoute>} />
+      <Route path="/wallet" element={<ProtectedRoute><ErrorBoundary sectionName="dompet koin"><WalletPage /></ErrorBoundary></ProtectedRoute>} />
+      <Route path="/creator/:authorId" element={<ProtectedRoute><ErrorBoundary sectionName="profil kreator"><CreatorProfile /></ErrorBoundary></ProtectedRoute>} />
     </Routes>
   );
 }

@@ -29,6 +29,8 @@ export interface CreatorChapter {
   number: number;
   title: string | null;
   pageCount: number;
+  isPremium: boolean;
+  priceCoins: number;
 }
 
 interface ComicRow {
@@ -123,14 +125,17 @@ export const listChapters = async (comicId: string): Promise<CreatorChapter[]> =
   if (!supabase) return [];
   const { data } = await supabase
     .from('chapters')
-    .select('id, number, title, chapter_pages(id)')
+    .select('id, number, title, is_premium, price_coins, chapter_pages(id)')
     .eq('comic_id', comicId)
     .order('number', { ascending: true });
-  return (data ?? []).map((row) => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data ?? []).map((row: any) => ({
     id: row.id,
     number: Number(row.number),
     title: row.title,
     pageCount: row.chapter_pages?.length ?? 0,
+    isPremium: Boolean(row.is_premium),
+    priceCoins: Number(row.price_coins || 0),
   }));
 };
 
@@ -176,7 +181,13 @@ export const createComic = async (input: {
 /** Tambah satu chapter beserta halaman-halamannya. */
 export const addChapter = async (
   comicId: string,
-  input: { number: number; title?: string; pageFiles: File[] },
+  input: {
+    number: number;
+    title?: string;
+    isPremium?: boolean;
+    priceCoins?: number;
+    pageFiles: File[];
+  },
 ): Promise<{ error: string | null }> => {
   if (!supabase) return { error: 'Supabase belum dikonfigurasi.' };
   if (!Number.isFinite(input.number)) return { error: 'Nomor chapter tidak valid.' };
@@ -188,7 +199,13 @@ export const addChapter = async (
 
   const { data: chapterRow, error: chapterErr } = await supabase
     .from('chapters')
-    .insert({ comic_id: comicId, number: input.number, title: input.title?.trim() || null })
+    .insert({
+      comic_id: comicId,
+      number: input.number,
+      title: input.title?.trim() || null,
+      is_premium: Boolean(input.isPremium),
+      price_coins: input.isPremium ? Number(input.priceCoins || 10) : 0,
+    })
     .select('id')
     .single();
   if (chapterErr) return { error: chapterErr.message };
@@ -230,15 +247,19 @@ export const findChapterByNumber = async (
   if (!supabase) return null;
   const { data } = await supabase
     .from('chapters')
-    .select('id, number, title, chapter_pages(id)')
+    .select('id, number, title, is_premium, price_coins, chapter_pages(id)')
     .eq('comic_id', comicId)
     .eq('number', number)
     .maybeSingle();
   if (!data) return null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const row = data as any;
   return {
-    id: data.id,
-    number: Number(data.number),
-    title: data.title,
-    pageCount: data.chapter_pages?.length ?? 0,
+    id: row.id,
+    number: Number(row.number),
+    title: row.title,
+    pageCount: row.chapter_pages?.length ?? 0,
+    isPremium: Boolean(row.is_premium),
+    priceCoins: Number(row.price_coins || 0),
   };
 };

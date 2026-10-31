@@ -7,8 +7,12 @@ import { listFavorites, type FavoriteEntry } from '../services/favorites';
 import { listMyComics, type CreatorComic } from '../services/creatorComics';
 import { getAuthorStats, type WorkStat } from '../services/analytics';
 
-import { BookOpen, Heart, Mail, Check, X, Settings2, Eye, BarChart3, ShieldCheck, Users } from 'lucide-react';
+import { BookOpen, Heart, Mail, Check, X, Settings2, Eye, BarChart3, ShieldCheck, Users, MessageSquare, Coins, AlertTriangle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { getMyCommunities } from '../services/community';
+import { getCreatorEarningsSummary } from '../services/wallet';
+import type { Community } from '../types/community';
+import type { CreatorEarningsSummary } from '../types/monetization';
 
 export const Profile: React.FC = () => {
   const { user, logout, setRole, updateProfile } = useAuth();
@@ -33,6 +37,11 @@ export const Profile: React.FC = () => {
   const [statFollowers, setStatFollowers] = useState(0);
   const [statsLoading, setStatsLoading] = useState(true);
   const [statsError, setStatsError] = useState(false);
+  const [creatorEarnings, setCreatorEarnings] = useState<CreatorEarningsSummary | null>(null);
+
+  // Komunitas yang diikuti (tab KOMUNITAS).
+  const [myCommunities, setMyCommunities] = useState<Community[]>([]);
+  const [communityLoading, setCommunityLoading] = useState(true);
 
   // State edit nama panggilan.
   const [editingName, setEditingName] = useState(false);
@@ -65,7 +74,7 @@ export const Profile: React.FC = () => {
     return () => { cancelled = true; };
   }, [activeTab, isAuthor]);
 
-  // Muat statistik saat tab ANALITIK dibuka (A2).
+  // Muat statistik & pendapatan saat tab ANALITIK dibuka (A2 & PRD §5.3).
   // Reset `statsLoading` dilakukan di handler klik tab (bukan di efek ini).
   useEffect(() => {
     if (!isAuthor || activeTab !== 'ANALITIK') return;
@@ -77,8 +86,25 @@ export const Profile: React.FC = () => {
       setStatsError(error);
       setStatsLoading(false);
     });
+    if (user?.id) {
+      getCreatorEarningsSummary(user.id).then((earn) => {
+        if (!cancelled) setCreatorEarnings(earn);
+      });
+    }
     return () => { cancelled = true; };
-  }, [activeTab, isAuthor]);
+  }, [activeTab, isAuthor, user?.id]);
+
+  // Muat komunitas yang diikuti saat tab KOMUNITAS dibuka.
+  useEffect(() => {
+    if (activeTab !== 'KOMUNITAS' || !user) return;
+    let cancelled = false;
+    getMyCommunities(user.id).then(data => {
+      if (cancelled) return;
+      setMyCommunities(data);
+      setCommunityLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [activeTab, user]);
 
   const showMainTab = () => {
     if (!isAuthor) setFavLoading(true);
@@ -169,9 +195,27 @@ export const Profile: React.FC = () => {
             >
               {t('profile.account')}
             </button>
+            <button
+              onClick={() => { setCommunityLoading(true); setActiveTab('KOMUNITAS'); }}
+              aria-pressed={activeTab === 'KOMUNITAS'}
+              className={`pb-4 font-bold text-sm tracking-widest uppercase transition-colors flex items-center gap-1.5 ${
+                activeTab === 'KOMUNITAS' ? 'text-primary border-b-4 border-primary' : 'text-gray-500 hover:text-gray-800'
+              }`}
+            >
+              <MessageSquare size={15} aria-hidden="true" />
+              {t('community.tabMy')}
+            </button>
           </div>
 
           <div className="flex items-center gap-2 mb-2">
+            <Link
+              to="/wallet"
+              className="px-4 py-2 bg-amber-100/90 border border-amber-300 text-amber-900 rounded-full text-sm font-bold hover:bg-amber-200 transition-colors flex items-center gap-1.5"
+            >
+              <Coins size={15} className="text-amber-600" aria-hidden="true" />
+              <span>{t('nav.wallet')}</span>
+              <span className="text-[10px] bg-amber-400/40 text-amber-900 px-1.5 py-0.2 rounded font-semibold">DEMO</span>
+            </Link>
             {isAdmin && (
               <Link
                 to="/admin"
@@ -190,7 +234,71 @@ export const Profile: React.FC = () => {
         </div>
 
         {/* Tab Content */}
-        {activeTab === 'AKUN' ? (
+        {activeTab === 'KOMUNITAS' ? (
+          /* Tab KOMUNITAS — komunitas yang diikuti user */
+          <div className="flex flex-col gap-4">
+            {communityLoading ? (
+              <div className="flex flex-col gap-3">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="h-20 bg-gray-200 rounded-2xl animate-pulse" />
+                ))}
+              </div>
+            ) : myCommunities.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+                <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center">
+                  <MessageSquare size={28} className="text-primary" aria-hidden="true" />
+                </div>
+                <h3 className="text-xl font-bold text-primary">Belum ada komunitas</h3>
+                <p className="text-sm text-gray-600 max-w-sm">
+                  Bergabunglah ke komunitas untuk berdiskusi dengan sesama pembaca dan kreator.
+                </p>
+                <Link
+                  to="/community"
+                  className="mt-2 px-5 py-2 bg-primary text-white font-bold rounded-full hover:bg-primary/90 transition-colors"
+                >
+                  {t('community.tabAll')}
+                </Link>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {myCommunities.map(c => (
+                  <Link
+                    key={c.id}
+                    to={`/community/${c.id}`}
+                    className="flex items-center gap-4 bg-surface/70 hover:bg-surface border border-primary/10 rounded-2xl p-4 transition-colors group"
+                  >
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-primary/10 shrink-0">
+                      {c.avatarUrl
+                        ? <img src={c.avatarUrl} alt={c.name} className="w-full h-full object-cover" />
+                        : <div className="w-full h-full flex items-center justify-center text-primary font-bold">{c.name.charAt(0)}</div>
+                      }
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-primary group-hover:underline truncate">{c.name}</p>
+                      <p className="text-xs text-gray-500 flex items-center gap-2 mt-0.5">
+                        <span className="flex items-center gap-1">
+                          <Users size={11} aria-hidden="true" />
+                          {c.memberCount.toLocaleString()} {t('community.members')}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MessageSquare size={11} aria-hidden="true" />
+                          {c.postCount} {t('community.posts')}
+                        </span>
+                      </p>
+                    </div>
+                    <span className="text-xs font-bold text-primary/50 group-hover:text-primary transition-colors">→</span>
+                  </Link>
+                ))}
+                <Link
+                  to="/community"
+                  className="text-center text-sm text-primary font-semibold hover:underline mt-2"
+                >
+                  Temukan lebih banyak komunitas →
+                </Link>
+              </div>
+            )}
+          </div>
+        ) : activeTab === 'AKUN' ? (
           <div className="flex flex-col gap-6">
             <AccountSection title={t('profile.loginWith')}>
               {user?.provider === 'google' ? (
@@ -344,6 +452,65 @@ export const Profile: React.FC = () => {
                 <div className="flex flex-col text-left">
                   <span className="text-3xl font-bold text-primary leading-none">{statFollowers}</span>
                   <span className="text-sm text-gray-600 mt-1">{t('profile.totalFollowers')}</span>
+                </div>
+              </div>
+
+              {/* Ringkasan Pendapatan Koin (PRD §5.3 - berlabel DEMO) */}
+              <div className="bg-surface border-2 border-amber-400/30 p-6 rounded-2xl flex flex-col gap-4 text-left">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                      <Coins size={20} className="text-amber-600" aria-hidden="true" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-primary flex items-center gap-2">
+                        {t('wallet.creatorEarnings')}
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 border border-amber-400 text-amber-800 text-[10px] font-bold">
+                          <AlertTriangle size={10} aria-hidden="true" />
+                          DEMO
+                        </span>
+                      </h4>
+                      <p className="text-xs text-gray-500">
+                        {t('wallet.payoutNotice')}
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    to="/wallet"
+                    className="text-xs font-bold text-primary hover:underline"
+                  >
+                    Buka Dompet →
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-primary/10">
+                  <div className="bg-background/80 rounded-xl p-3 border border-primary/10">
+                    <p className="text-xs text-gray-500">{t('wallet.grossEarnings')}</p>
+                    <p className="text-xl font-bold text-primary mt-1">
+                      {creatorEarnings?.grossCoins ?? 0} <span className="text-xs font-normal">Koin</span>
+                    </p>
+                    <p className="text-[11px] text-gray-400 mt-0.5">
+                      Pendapatan kotor simulasi
+                    </p>
+                  </div>
+
+                  <div className="bg-background/80 rounded-xl p-3 border border-primary/10">
+                    <p className="text-xs text-gray-500">{t('wallet.platformFee')}</p>
+                    <p className="text-xl font-bold text-gray-600 mt-1">
+                      {creatorEarnings?.platformFeeCoins ?? 0} <span className="text-xs font-normal">Koin</span>
+                    </p>
+                    <p className="text-[11px] text-gray-400 mt-0.5">30% untuk platform</p>
+                  </div>
+
+                  <div className="bg-amber-50/80 rounded-xl p-3 border border-amber-300">
+                    <p className="text-xs text-amber-800 font-medium">{t('wallet.netEarnings')}</p>
+                    <p className="text-xl font-bold text-amber-700 mt-1">
+                      {creatorEarnings?.netCoins ?? 0} <span className="text-xs font-normal">Koin</span>
+                    </p>
+                    <p className="text-[11px] text-amber-600 font-semibold mt-0.5">
+                      ≈ Rp {(creatorEarnings?.estimatedNetIdr ?? 0).toLocaleString('id-ID')} (Simulasi)
+                    </p>
+                  </div>
                 </div>
               </div>
 

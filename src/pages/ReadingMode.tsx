@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { fetchMangaDetail } from '../services/api';
 import {
   ChevronLeft,
@@ -10,7 +10,11 @@ import {
   Sun,
   ZoomIn,
   ZoomOut,
+  Lock,
+  Coins,
+  AlertTriangle,
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import {
   isKitsuId,
@@ -20,6 +24,7 @@ import {
   type CreatorChapter,
 } from '../services/creatorComics';
 import { recordChapterView } from '../services/analytics';
+import { isChapterUnlocked, unlockChapter, getCoinBalance } from '../services/wallet';
 
 const NIGHT_KEY = 'komikinaja_night';
 const getInitialNight = (): boolean =>
@@ -30,6 +35,7 @@ const posKey = (comicId: string, ep: string) => `komikinaja_pos_${comicId}_${ep}
 export const ReadingMode: React.FC = () => {
   const { id, episode } = useParams<{ id: string; episode: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { t } = useLanguage();
   const isCreator = id ? !isKitsuId(id) : false;
 
@@ -41,6 +47,13 @@ export const ReadingMode: React.FC = () => {
   const [pages, setPages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+
+  // Status chapter premium & lock
+  const [isLocked, setIsLocked] = useState(false);
+  const [lockedChapter, setLockedChapter] = useState<CreatorChapter | null>(null);
+  const [userCoins, setUserCoins] = useState<number>(0);
+  const [unlocking, setUnlocking] = useState(false);
+  const [unlockError, setUnlockError] = useState('');
 
   // Fitur P4
   const [zoom, setZoom] = useState(100);
@@ -71,6 +84,23 @@ export const ReadingMode: React.FC = () => {
       setComic(data);
       setChapters(ch);
       setChapterTitle(current.title ?? '');
+
+      const isOwner = user?.id === data.authorId;
+      if (current.isPremium && !isOwner) {
+        const unlocked = await isChapterUnlocked(user?.id || '', current.id);
+        if (!unlocked) {
+          setIsLocked(true);
+          setLockedChapter(current);
+          if (user?.id) {
+            const bal = await getCoinBalance(user.id);
+            if (!cancelled) setUserCoins(bal);
+          }
+          return true;
+        }
+      }
+
+      setIsLocked(false);
+      setLockedChapter(null);
       // Catat pembukaan chapter untuk analitik author (A2) — abaikan kegagalan.
       await recordChapterView(cid, current.id);
       const { data: pageUrls, error } = await getChapterPages(current.id);
@@ -87,7 +117,7 @@ export const ReadingMode: React.FC = () => {
     });
 
     return () => { cancelled = true; };
-  }, [id, episode]);
+  }, [id, episode, user?.id]);
 
   // Ingat posisi: pulihkan scroll saat konten siap (sekali saja).
   useEffect(() => {
@@ -136,6 +166,36 @@ export const ReadingMode: React.FC = () => {
   const chapterLabel = chapterTitle
     ? `${t('read.chapterLabel')} ${episode} — ${chapterTitle}`
     : `${t('read.chapterLabel')} ${episode}`;
+
+  const handleUnlock = async () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    if (!lockedChapter || !comic) return;
+    setUnlocking(true);
+    setUnlockError('');
+    const price = lockedChapter.priceCoins || 10;
+    const res = await unlockChapter(
+      user.id,
+      comic.id,
+      comic.title,
+      lockedChapter.id,
+      lockedChapter.number,
+      price,
+      comic.authorId
+    );
+    setUnlocking(false);
+    if (res.success) {
+      setIsLocked(false);
+      setUserCoins(res.newBalance);
+      await recordChapterView(comic.id, lockedChapter.id);
+      const { data: pageUrls } = await getChapterPages(lockedChapter.id);
+      if (pageUrls) setPages(pageUrls);
+    } else {
+      setUnlockError(res.error || 'Gagal membuka chapter.');
+    }
+  };
 
   const zoomOut = () => setZoom((z) => Math.max(50, z - 25));
   const zoomIn = () => setZoom((z) => Math.min(200, z + 25));
@@ -204,6 +264,80 @@ export const ReadingMode: React.FC = () => {
           <div className="w-72 h-96 bg-gray-300/40 rounded-xl animate-pulse"></div>
           <p className="text-sm text-gray-400">{t('common.loading')}</p>
         </main>
+      ) : isLocked && lockedChapter ? (
+        /* Chapter Premium Terkunci */
+        <main className="flex-1 w-full flex items-center justify-center p-6">
+          <div className="max-w-md w-full bg-surface border-2 border-amber-400/40 rounded-3xl p-8 flex flex-col items-center gap-5 text-center shadow-2xl">
+            <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center shadow-inner">
+              <Lock size={32} className="text-amber-600" aria-hidden="true" />
+            </div>
+
+            <div className="flex flex-col gap-1 items-center">
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-100 border border-amber-400 text-amber-800 text-[11px] font-bold tracking-wider">
+                <AlertTriangle size={12} aria-hidden="true" />
+                DEMO / SIMULASI
+              </span>
+              <h1 className="text-2xl font-bold font-heading text-primary mt-2">
+                Chapter Khusus Koin
+              </h1>
+              <p className="text-sm text-gray-600">
+                {comic?.title} — Chapter {lockedChapter.number}
+              </p>
+            </div>
+
+            <div className="w-full bg-amber-50/80 border border-amber-200 rounded-2xl p-4 flex justify-between items-center text-sm">
+              <div className="flex items-center gap-2">
+                <Coins size={18} className="text-amber-600" aria-hidden="true" />
+                <span className="text-gray-700 font-medium">Harga Chapter:</span>
+              </div>
+              <span className="text-lg font-bold text-amber-700">
+                {lockedChapter.priceCoins || 10} Koin
+              </span>
+            </div>
+
+            <div className="w-full flex justify-between items-center text-xs text-gray-500 px-1">
+              <span>Saldo Koin Kamu:</span>
+              <span className="font-bold text-primary text-sm flex items-center gap-1">
+                <Coins size={14} className="text-amber-500" />
+                {userCoins} Koin
+              </span>
+            </div>
+
+            {unlockError && (
+              <p role="alert" className="text-red-500 text-xs w-full bg-red-50 p-2.5 rounded-xl border border-red-200 font-medium">
+                {unlockError}
+              </p>
+            )}
+
+            <div className="w-full flex flex-col gap-2.5 mt-2">
+              {userCoins >= (lockedChapter.priceCoins || 10) ? (
+                <button
+                  onClick={handleUnlock}
+                  disabled={unlocking}
+                  className="w-full py-3 bg-primary text-white font-bold rounded-full hover:bg-primary/90 disabled:opacity-50 transition-colors shadow flex items-center justify-center gap-2"
+                >
+                  <Lock size={16} aria-hidden="true" />
+                  {unlocking ? 'Membuka...' : `Buka Sekarang (${lockedChapter.priceCoins || 10} Koin)`}
+                </button>
+              ) : (
+                <Link
+                  to="/wallet"
+                  className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-full transition-colors shadow flex items-center justify-center gap-2"
+                >
+                  <Coins size={16} aria-hidden="true" />
+                  Top Up Koin Demo di Dompet
+                </Link>
+              )}
+
+              <button
+                onClick={() => navigate(`/comic/${id}`)}
+                className="w-full py-2.5 border border-gray-300 text-gray-700 hover:bg-gray-100 font-semibold rounded-full text-sm transition-colors"
+              >
+                Kembali ke Info Komik
+              </button>
+            </div>
+          </div>
+        </main>
       ) : loadError ? (
         <main className="flex-1 w-full flex flex-col items-center justify-center p-6">
           <div className="max-w-xl w-full bg-surface rounded-2xl p-8 flex flex-col items-center gap-4 text-center">
@@ -267,7 +401,7 @@ export const ReadingMode: React.FC = () => {
           <nav className="w-full max-w-3xl mx-auto px-4 py-8 flex items-center justify-between gap-4">
             {prevChapter ? (
               <button
-                onClick={() => navigate(`/read/${id}/${prevChapter.number}`)}
+                onClick={() => { setLoading(true); navigate(`/read/${id}/${prevChapter.number}`); }}
                 className="flex items-center gap-2 px-5 py-3 rounded-full font-bold border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors"
               >
                 <ChevronLeft size={18} aria-hidden="true" /> {t('read.prevChapter')}
@@ -280,7 +414,7 @@ export const ReadingMode: React.FC = () => {
             </span>
             {nextChapter ? (
               <button
-                onClick={() => navigate(`/read/${id}/${nextChapter.number}`)}
+                onClick={() => { setLoading(true); navigate(`/read/${id}/${nextChapter.number}`); }}
                 className="flex items-center gap-2 px-5 py-3 rounded-full font-bold border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors"
               >
                 {t('read.nextChapter')} <ChevronRight size={18} aria-hidden="true" />
