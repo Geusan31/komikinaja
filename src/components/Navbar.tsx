@@ -29,6 +29,8 @@ export const Navbar: React.FC = () => {
       window.removeEventListener('focus', updateBalance);
     };
   }, [user]);
+
+  const displayBalance = user ? (coinBalance ?? 0) : 0;
   
   return (
     <nav className="w-full bg-[#212844] px-4 md:px-8 py-4 flex flex-col sticky top-0 z-50 shadow-sm">
@@ -48,27 +50,25 @@ export const Navbar: React.FC = () => {
           </Link>
           
           <div className="hidden md:flex items-center gap-8 font-semibold text-sm">
-            <Link to="/" className="text-background hover:text-amber-100">{t('nav.recommendation')}</Link>
-            <Link to="/trending" className="text-background hover:text-amber-100">{t('nav.trending')}</Link>
-            <Link to="/category" className="text-background hover:text-amber-100">{t('nav.category')}</Link>
-            <Link to="/community" className="text-background hover:text-amber-100">{t('nav.community')}</Link>
+            <Link to="/" className="text-background hover:text-amber-100 transition-colors">{t('nav.recommendation')}</Link>
+            <Link to="/trending" className="text-background hover:text-amber-100 transition-colors">{t('nav.trending')}</Link>
+            <Link to="/category" className="text-background hover:text-amber-100 transition-colors">{t('nav.category')}</Link>
+            <Link to="/community" className="text-background hover:text-amber-100 transition-colors">{t('nav.community')}</Link>
           </div>
         </div>
 
         <div className="flex items-center gap-3 md:gap-5">
-          {/* Dompet Koin Demo Link */}
+          {/* Dompet Koin Link — harmonis dengan warna navy navbar */}
           {user && (
             <Link
               to="/wallet"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/40 text-amber-200 transition-colors text-xs font-bold"
-              title={`${t('nav.wallet')} (DEMO)`}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/15 text-background transition-colors text-xs font-semibold border border-white/10"
+              title={`${t('nav.wallet')} (Simulasi)`}
               aria-label={t('nav.wallet')}
             >
-              <Coins size={15} className="text-amber-400" aria-hidden="true" />
-              <span>{coinBalance ?? 0}</span>
-              <span className="text-[10px] bg-amber-400/30 text-amber-300 px-1 py-0.2 rounded font-semibold tracking-wider">
-                DEMO
-              </span>
+              <Coins size={14} className="text-amber-300" aria-hidden="true" />
+              <span>{displayBalance}</span>
+              <span className="text-[10px] text-gray-300 font-normal">Koin</span>
             </Link>
           )}
 
@@ -102,10 +102,10 @@ export const Navbar: React.FC = () => {
             <Link
               to="/wallet"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="text-amber-300 hover:text-white flex items-center gap-2 pt-1 border-t border-white/10"
+              className="text-background hover:text-amber-100 flex items-center gap-2 pt-2 border-t border-white/10 font-semibold"
             >
-              <Coins size={16} className="text-amber-400" aria-hidden="true" />
-              <span>{t('nav.wallet')} ({coinBalance ?? 0} Koin — DEMO)</span>
+              <Coins size={16} className="text-amber-300" aria-hidden="true" />
+              <span>{t('nav.wallet')} ({displayBalance} Koin)</span>
             </Link>
           )}
         </div>
