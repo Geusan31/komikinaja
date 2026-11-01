@@ -11,7 +11,7 @@ import {
   UserPlus,
   Lock,
   Unlock,
-  AlertTriangle,
+  Users,
   Trophy,
   Coins,
   X,
@@ -38,13 +38,12 @@ import type { Comic } from '../types/comic';
 import type { SupporterLeaderboardItem, SupportMessage } from '../types/monetization';
 
 // ---------------------------------------------------------------------------
-// DEMO badge
+// Simulation badge
 // ---------------------------------------------------------------------------
 
-const DemoBadge: React.FC = () => (
-  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 border border-amber-300 text-amber-700 text-[10px] font-bold tracking-wider">
-    <AlertTriangle size={10} aria-hidden="true" />
-    DEMO
+const SimulationBadge: React.FC = () => (
+  <span className="text-[11px] font-semibold text-primary/70 bg-primary/10 px-2.5 py-0.5 rounded-md">
+    Simulasi • Sandbox
   </span>
 );
 
@@ -96,27 +95,29 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" role="dialog" aria-modal="true">
-      <div className="bg-background rounded-2xl p-6 w-full max-w-sm shadow-2xl flex flex-col gap-4">
+      <div className="bg-background rounded-xl border border-primary/20 p-6 w-full max-w-sm shadow-xl flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-bold text-primary">{t('detail.unlockConfirmTitle')}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-700" aria-label="Tutup">
-            <X size={20} aria-hidden="true" />
+          <h2 className="font-heading font-bold text-primary text-base">{t('detail.unlockConfirmTitle')}</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 cursor-pointer" aria-label="Tutup">
+            <X size={18} aria-hidden="true" />
           </button>
         </div>
 
         {success ? (
           <div className="flex flex-col items-center gap-3 text-center py-4">
-            <Unlock size={40} className="text-green-500" aria-hidden="true" />
-            <p className="font-bold text-green-600">Chapter berhasil dibuka!</p>
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Unlock size={24} className="text-primary" aria-hidden="true" />
+            </div>
+            <p className="font-heading font-bold text-primary text-base">Chapter berhasil dibuka!</p>
           </div>
         ) : (
           <>
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex gap-2 items-start">
-              <DemoBadge />
-              <p className="text-xs text-amber-700">{t('wallet.demoNotice')}</p>
+            <div className="bg-surface border border-primary/15 rounded-lg p-3 flex items-center justify-between gap-2">
+              <p className="text-xs text-gray-700 leading-snug">{t('wallet.demoNotice')}</p>
+              <SimulationBadge />
             </div>
 
-            <p className="text-sm text-gray-700">
+            <p className="text-xs text-gray-700 leading-relaxed">
               {t('detail.unlockConfirmDesc', {
                 chapter: chapter.number,
                 coins: chapter.priceCoins,
@@ -124,13 +125,17 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
             </p>
 
             {balance !== null && (
-              <p className="text-sm font-semibold text-primary">
-                {t('detail.yourBalance', { balance })}
-              </p>
+              <div className="flex items-center justify-between text-xs text-gray-600">
+                <span>Saldo Anda:</span>
+                <span className="font-semibold text-primary flex items-center gap-1">
+                  <Coins size={13} className="text-primary/70" />
+                  {balance} Koin
+                </span>
+              </div>
             )}
 
             {error && (
-              <div className="text-red-500 text-sm bg-red-50 rounded-xl p-3">
+              <div className="text-red-600 text-xs bg-red-50 rounded-md p-2.5 border border-red-200 font-medium">
                 {error}
                 {insufficient && (
                   <Link to="/wallet" className="block mt-1 font-bold underline text-primary">
@@ -140,17 +145,17 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
               </div>
             )}
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-1">
               <button
                 onClick={onClose}
-                className="flex-1 py-2.5 border-2 border-gray-300 font-bold rounded-full text-sm hover:bg-gray-100"
+                className="flex-1 py-2.5 border border-primary/30 text-primary font-semibold rounded-md text-xs hover:bg-primary/5 transition-colors cursor-pointer"
               >
                 {t('detail.cancel')}
               </button>
               <button
                 onClick={handleUnlock}
                 disabled={loading || insufficient}
-                className="flex-1 py-2.5 bg-primary text-white font-bold rounded-full text-sm disabled:opacity-50 hover:bg-primary/90"
+                className="flex-1 py-2.5 bg-primary text-white font-semibold rounded-md text-xs disabled:opacity-50 hover:bg-primary-hover transition-colors cursor-pointer"
               >
                 {loading ? '...' : t('detail.confirmUnlock', { coins: chapter.priceCoins })}
               </button>
@@ -217,45 +222,54 @@ const TipModal: React.FC<TipModalProps> = ({ creatorName, creatorId, comicId, co
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" role="dialog" aria-modal="true">
-      <div className="bg-background rounded-2xl p-6 w-full max-w-sm shadow-2xl flex flex-col gap-4">
+      <div className="bg-background rounded-xl border border-primary/20 p-6 w-full max-w-sm shadow-xl flex flex-col gap-4">
         {done ? (
           <div className="flex flex-col items-center gap-3 text-center py-4">
-            <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center">
-              <Heart size={28} className="text-red-500" fill="currentColor" aria-hidden="true" />
+            <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Heart size={24} className="text-primary" fill="currentColor" aria-hidden="true" />
             </div>
-            <p className="font-bold text-primary">{t('tip.success', { coins })}</p>
-            <DemoBadge />
-            <button onClick={onClose} className="mt-2 px-6 py-2 bg-primary text-white font-bold rounded-full text-sm">
+            <p className="font-heading font-bold text-primary text-base">{t('tip.success', { coins })}</p>
+            <SimulationBadge />
+            <button
+              onClick={onClose}
+              className="mt-2 w-full py-2.5 bg-primary text-white font-semibold text-xs rounded-md hover:bg-primary-hover transition-colors cursor-pointer"
+            >
               {t('common.back')}
             </button>
           </div>
         ) : (
           <>
             <div className="flex items-center justify-between">
-              <h2 className="font-bold text-primary text-base">{t('tip.modalTitle', { creator: creatorName })}</h2>
-              <button onClick={onClose} className="text-gray-400 hover:text-gray-700" aria-label="Tutup">
-                <X size={20} aria-hidden="true" />
+              <h2 className="font-heading font-bold text-primary text-base">{t('tip.modalTitle', { creator: creatorName })}</h2>
+              <button onClick={onClose} className="text-gray-400 hover:text-gray-700 cursor-pointer" aria-label="Tutup">
+                <X size={18} aria-hidden="true" />
               </button>
             </div>
 
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
-              <DemoBadge />
-              <p className="text-xs text-amber-700">{t('tip.modalDesc')}</p>
+            <div className="bg-surface border border-primary/15 rounded-lg p-3 flex items-center justify-between gap-2">
+              <p className="text-xs text-gray-700 leading-snug">{t('tip.modalDesc')}</p>
+              <SimulationBadge />
             </div>
 
             {balance !== null && (
-              <p className="text-xs text-gray-500 text-right">{t('detail.yourBalance', { balance })}</p>
+              <div className="flex items-center justify-between text-xs text-gray-600">
+                <span>Saldo Anda:</span>
+                <span className="font-semibold text-primary flex items-center gap-1">
+                  <Coins size={13} className="text-primary/70" />
+                  {balance} Koin
+                </span>
+              </div>
             )}
 
             <div>
-              <p className="text-sm font-semibold text-gray-700 mb-2">{t('tip.amountLabel')}</p>
+              <p className="text-xs font-semibold text-gray-700 mb-2">{t('tip.amountLabel')}</p>
               <div className="flex flex-wrap gap-2">
                 {TIP_AMOUNTS.map(amt => (
                   <button
                     key={amt}
                     onClick={() => setCoins(amt)}
-                    className={`px-4 py-1.5 rounded-full font-bold text-sm border-2 transition-colors ${
-                      coins === amt ? 'bg-primary text-white border-primary' : 'border-primary/20 text-primary hover:border-primary'
+                    className={`px-3.5 py-1.5 rounded-md font-semibold text-xs border transition-colors cursor-pointer ${
+                      coins === amt ? 'bg-primary text-white border-primary' : 'border-primary/20 text-primary hover:border-primary/50'
                     }`}
                   >
                     {amt}
@@ -270,24 +284,27 @@ const TipModal: React.FC<TipModalProps> = ({ creatorName, creatorId, comicId, co
               placeholder={t('tip.messagePlaceholder')}
               rows={2}
               maxLength={200}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary resize-none bg-background"
+              className="w-full px-3 py-2 text-xs border border-primary/20 rounded-md outline-none focus:border-primary resize-none bg-background text-primary"
             />
 
-            <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+            <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer select-none">
               <input type="checkbox" checked={isAnonymous} onChange={e => setIsAnonymous(e.target.checked)} className="accent-primary" />
               {t('tip.anonymous')}
             </label>
 
-            {error && <p role="alert" className="text-red-500 text-xs">{error}</p>}
+            {error && <p role="alert" className="text-red-500 text-xs font-medium">{error}</p>}
 
-            <div className="flex gap-3">
-              <button onClick={onClose} className="flex-1 py-2.5 border-2 border-gray-300 font-bold rounded-full text-sm">
+            <div className="flex gap-3 pt-1">
+              <button
+                onClick={onClose}
+                className="flex-1 py-2.5 border border-primary/30 text-primary font-semibold rounded-md text-xs hover:bg-primary/5 transition-colors cursor-pointer"
+              >
                 {t('detail.cancel')}
               </button>
               <button
                 onClick={handleSend}
                 disabled={loading || !user}
-                className="flex-1 py-2.5 bg-amber-500 text-white font-bold rounded-full text-sm disabled:opacity-60 hover:bg-amber-600"
+                className="flex-1 py-2.5 bg-primary text-white font-semibold rounded-md text-xs disabled:opacity-60 hover:bg-primary-hover transition-colors cursor-pointer"
               >
                 {loading ? '...' : t('tip.sendBtn', { coins })}
               </button>
@@ -319,53 +336,65 @@ const SupportWallMini: React.FC<{ creatorId: string; comicId?: string; refreshKe
     return () => { cancelled = true; };
   }, [creatorId, comicId, refreshKey]);
 
-  if (loading) return <div className="h-20 bg-gray-200 rounded-2xl animate-pulse" />;
+  if (loading) return <div className="h-20 bg-surface rounded-xl border border-primary/10 animate-pulse" />;
 
   return (
-    <div className="bg-surface/70 border border-primary/10 rounded-2xl p-5 flex flex-col gap-4">
+    <div className="bg-surface rounded-xl border border-primary/15 p-5 flex flex-col gap-4 shadow-sm">
       <div className="flex items-center justify-between">
-        <h3 className="font-bold text-primary flex items-center gap-2 text-base">
-          <Trophy size={16} className="text-amber-500" aria-hidden="true" />
+        <h3 className="font-heading font-bold text-primary flex items-center gap-2 text-sm">
+          <Trophy size={16} className="text-primary/70" aria-hidden="true" />
           {t('detail.supportWall')}
         </h3>
-        <DemoBadge />
+        <SimulationBadge />
       </div>
 
       {leaderboard.length === 0 && messages.length === 0 ? (
-        <p className="text-sm text-gray-500 text-center py-2">{t('detail.noSupporters')}</p>
+        <p className="text-xs text-gray-500 text-center py-2">{t('detail.noSupporters')}</p>
       ) : (
         <>
           {leaderboard.length > 0 && (
             <div className="flex flex-col gap-2">
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">{t('detail.topSupporters')}</p>
+              <p className="text-[11px] font-semibold text-primary/70 uppercase tracking-wide">{t('detail.topSupporters')}</p>
               {leaderboard.map(item => (
-                <div key={item.userId} className="flex items-center gap-2 bg-background/60 rounded-lg px-3 py-2">
-                  <span className="text-sm w-5">{item.rank === 1 ? '🥇' : item.rank === 2 ? '🥈' : item.rank === 3 ? '🥉' : `#${item.rank}`}</span>
-                  <div className="w-7 h-7 rounded-full bg-primary/10 overflow-hidden shrink-0">
+                <div key={item.userId} className="flex items-center gap-2.5 bg-background/80 rounded-lg p-2.5 border border-primary/10">
+                  <span
+                    className={`w-5 h-5 rounded-md text-[11px] font-bold flex items-center justify-center shrink-0 ${
+                      item.rank === 1
+                        ? 'bg-primary text-white'
+                        : item.rank === 2
+                        ? 'bg-primary/80 text-white'
+                        : item.rank === 3
+                        ? 'bg-primary/60 text-white'
+                        : 'bg-primary/10 text-primary'
+                    }`}
+                  >
+                    {item.rank}
+                  </span>
+                  <div className="w-7 h-7 rounded-md bg-primary/10 overflow-hidden shrink-0 border border-primary/20 flex items-center justify-center">
                     {item.userAvatar
                       ? <img src={item.userAvatar} alt={item.userName} className="w-full h-full object-cover" />
                       : <div className="w-full h-full flex items-center justify-center text-primary text-xs font-bold">{item.userName.charAt(0)}</div>
                     }
                   </div>
-                  <span className="flex-1 font-semibold text-sm text-primary truncate">{item.userName}</span>
-                  <span className="text-xs font-bold text-amber-600 flex items-center gap-1">
-                    <Coins size={11} aria-hidden="true" /> {item.totalCoins}
+                  <span className="flex-1 font-heading font-bold text-xs text-primary truncate">{item.userName}</span>
+                  <span className="text-xs font-semibold text-primary flex items-center gap-1 shrink-0">
+                    <Coins size={12} className="text-primary/70" aria-hidden="true" /> {item.totalCoins}
                   </span>
                 </div>
               ))}
             </div>
           )}
           {messages.length > 0 && (
-            <div className="flex flex-col gap-1.5">
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">{t('detail.recentCheers')}</p>
+            <div className="flex flex-col gap-1.5 pt-1 border-t border-primary/10">
+              <p className="text-[11px] font-semibold text-primary/70 uppercase tracking-wide">{t('detail.recentCheers')}</p>
               {messages.slice(0, 3).map(msg => (
-                <div key={msg.id} className="flex gap-2 bg-background/60 rounded-lg px-3 py-2">
-                  <MessageCircle size={12} className="text-primary/40 shrink-0 mt-0.5" aria-hidden="true" />
+                <div key={msg.id} className="flex gap-2 items-start bg-background/80 rounded-lg p-2.5 border border-primary/10">
+                  <MessageCircle size={13} className="text-primary/50 shrink-0 mt-0.5" aria-hidden="true" />
                   <div className="flex-1 min-w-0">
-                    <span className="font-bold text-xs text-primary">{msg.donorName}</span>
-                    {msg.message && <p className="text-xs text-gray-600 truncate">{msg.message}</p>}
+                    <span className="font-heading font-bold text-xs text-primary">{msg.donorName}</span>
+                    {msg.message && <p className="text-xs text-gray-700 truncate mt-0.5">{msg.message}</p>}
                   </div>
-                  <span className="text-xs text-amber-600 font-bold shrink-0">+{msg.coinAmount}</span>
+                  <span className="text-xs text-primary font-semibold shrink-0">+{msg.coinAmount}</span>
                 </div>
               ))}
             </div>
@@ -408,44 +437,44 @@ const ChapterItem: React.FC<ChapterItemProps> = ({ chapter, comicId, comicTitle,
         {canRead ? (
           <Link
             to={`/read/${comicId}/${chapter.number}`}
-            className="flex items-center justify-between bg-surface/70 hover:bg-surface border border-primary/10 rounded-xl px-5 py-4 transition-colors group"
+            className="flex items-center justify-between bg-surface/70 hover:bg-surface border border-primary/15 rounded-xl px-5 py-4 transition-colors group"
           >
             <div className="flex items-center gap-3">
-              <span className="font-semibold text-primary">
+              <span className="font-heading font-bold text-primary text-sm">
                 {t('detail.chapterWord')} {chapter.number}
                 {chapter.title ? ` — ${chapter.title}` : ''}
               </span>
               {chapter.isPremium && (
-                <span className="flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 border border-green-200 rounded-full text-[10px] font-bold">
+                <span className="flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-md text-[10px] font-semibold">
                   <Unlock size={10} aria-hidden="true" />
                   Terbuka
                 </span>
               )}
               {!chapter.isPremium && (
-                <span className="px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-full text-[10px] font-bold">
+                <span className="px-2 py-0.5 bg-surface text-primary/70 border border-primary/15 rounded-md text-[10px] font-semibold">
                   {t('detail.freeChapter')}
                 </span>
               )}
             </div>
-            <span className="text-sm text-gray-500 group-hover:text-primary">{t('detail.readChapter')} →</span>
+            <span className="text-xs font-semibold text-gray-500 group-hover:text-primary transition-colors">{t('detail.readChapter')} →</span>
           </Link>
         ) : (
           <button
             onClick={() => setShowUnlock(true)}
-            className="w-full flex items-center justify-between bg-surface/40 hover:bg-surface/70 border border-primary/10 rounded-xl px-5 py-4 transition-colors group text-left"
+            className="w-full flex items-center justify-between bg-surface/50 hover:bg-surface border border-primary/15 rounded-xl px-5 py-4 transition-colors group text-left cursor-pointer"
           >
             <div className="flex items-center gap-3">
-              <span className="font-semibold text-primary/70">
+              <span className="font-heading font-semibold text-primary/70 text-sm">
                 {t('detail.chapterWord')} {chapter.number}
                 {chapter.title ? ` — ${chapter.title}` : ''}
               </span>
-              <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 border border-amber-300 rounded-full text-[10px] font-bold">
+              <span className="flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-md text-[10px] font-semibold">
                 <Lock size={10} aria-hidden="true" />
                 {t('detail.premiumChapter')}
               </span>
             </div>
-            <span className="flex items-center gap-1 text-sm font-bold text-amber-600 group-hover:text-amber-700 shrink-0">
-              <Coins size={14} aria-hidden="true" />
+            <span className="flex items-center gap-1 text-xs font-semibold text-primary group-hover:text-primary-hover shrink-0">
+              <Coins size={13} className="text-primary/70" aria-hidden="true" />
               {t('detail.unlockPrice', { coins: chapter.priceCoins })}
             </span>
           </button>
@@ -731,19 +760,19 @@ export const ComicDetail: React.FC = () => {
 
         {/* Action buttons */}
         {user && (
-          <div className="flex flex-col items-center gap-2 mb-4">
-            <div className="flex flex-wrap items-center justify-center gap-3">
+          <div className="flex flex-col items-center gap-2 mb-6">
+            <div className="flex flex-wrap items-center justify-center gap-2.5">
               {/* Favorite */}
               <button
                 type="button"
                 onClick={handleToggleFavorite}
                 disabled={favBusy}
                 aria-pressed={isFav}
-                className={`px-6 py-2 rounded-full font-bold border-2 transition-colors flex items-center gap-2 disabled:opacity-60 ${
-                  isFav ? 'bg-primary text-white border-primary' : 'bg-transparent text-primary border-primary hover:bg-primary hover:text-white'
+                className={`px-4 py-2.5 rounded-md font-semibold text-xs border transition-colors flex items-center gap-2 disabled:opacity-60 cursor-pointer ${
+                  isFav ? 'bg-primary text-white border-primary' : 'bg-transparent text-primary border-primary/30 hover:bg-primary/5'
                 }`}
               >
-                <Heart size={18} className={isFav ? 'fill-white' : ''} aria-hidden="true" />
+                <Heart size={15} className={isFav ? 'fill-white' : ''} aria-hidden="true" />
                 {isFav ? t('detail.removeFavorite') : t('detail.addFavorite')}
               </button>
 
@@ -754,13 +783,13 @@ export const ComicDetail: React.FC = () => {
                   onClick={handleToggleFollow}
                   disabled={followBusy}
                   aria-pressed={isFollow}
-                  className={`px-6 py-2 rounded-full font-bold border-2 transition-colors flex items-center gap-2 disabled:opacity-60 ${
-                    isFollow ? 'bg-surface text-primary border-primary/40' : 'bg-primary text-white border-primary hover:bg-primary/90'
+                  className={`px-4 py-2.5 rounded-md font-semibold text-xs border transition-colors flex items-center gap-2 disabled:opacity-60 cursor-pointer ${
+                    isFollow ? 'border-primary/30 text-primary hover:bg-red-50 hover:text-red-600 hover:border-red-300' : 'bg-primary text-white border-primary hover:bg-primary-hover'
                   }`}
                 >
-                  <UserPlus size={18} aria-hidden="true" />
+                  <UserPlus size={15} aria-hidden="true" />
                   {isFollow ? t('detail.unfollow') : t('detail.follow')}
-                  {followerTotal !== null && <span className="ml-1 text-xs font-bold opacity-80">· {followerTotal}</span>}
+                  {followerTotal !== null && <span className="ml-0.5 text-xs font-bold opacity-80">· {followerTotal}</span>}
                 </button>
               )}
 
@@ -769,30 +798,27 @@ export const ComicDetail: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowTip(true)}
-                  className="px-6 py-2 rounded-full font-bold border-2 border-amber-400 text-amber-700 hover:bg-amber-50 transition-colors flex items-center gap-2"
+                  className="px-4 py-2.5 rounded-md font-semibold text-xs border border-primary/30 text-primary hover:bg-primary/5 transition-colors flex items-center gap-2 cursor-pointer"
                 >
-                  <Heart size={18} aria-hidden="true" />
+                  <Heart size={15} className="text-primary" aria-hidden="true" />
                   {t('detail.supportAuthor')}
                 </button>
               )}
-            </div>
-            {favError && <p role="alert" className="text-red-500 text-xs">{favError}</p>}
-            {followError && <p role="alert" className="text-red-500 text-xs">{followError}</p>}
-          </div>
-        )}
 
-        {/* Community link */}
-        {communityId && (
-          <Link
-            to={`/community/${communityId}`}
-            className="mb-6 px-6 py-2 rounded-full font-bold border-2 border-primary/30 text-primary/80 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all text-sm flex items-center gap-2"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
-            </svg>
-            Lihat Komunitas
-          </Link>
+              {/* Community link */}
+              {communityId && (
+                <Link
+                  to={`/community/${communityId}`}
+                  className="px-4 py-2.5 rounded-md font-semibold text-xs border border-primary/30 text-primary hover:bg-primary/5 transition-colors flex items-center gap-2"
+                >
+                  <Users size={15} aria-hidden="true" />
+                  Komunitas
+                </Link>
+              )}
+            </div>
+            {favError && <p role="alert" className="text-red-500 text-xs font-medium">{favError}</p>}
+            {followError && <p role="alert" className="text-red-500 text-xs font-medium">{followError}</p>}
+          </div>
         )}
 
         {/* Synopsis */}
