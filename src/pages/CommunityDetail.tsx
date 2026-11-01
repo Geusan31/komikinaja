@@ -6,12 +6,12 @@ import {
   MessageSquare,
   Heart,
   Flag,
-  AlertTriangle,
   Send,
   EyeOff,
-  Eye,
   ShieldAlert,
   Plus,
+  BookOpen,
+  Info,
 } from 'lucide-react';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
@@ -76,35 +76,35 @@ const ReportModal: React.FC<ReportModalProps> = ({ targetType, onClose, onSubmit
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       aria-label={t('community.report')}
     >
-      <div className="bg-background rounded-2xl p-6 w-full max-w-md shadow-xl flex flex-col gap-4">
+      <div className="bg-background rounded-xl border border-primary/20 p-6 w-full max-w-md shadow-xl flex flex-col gap-4">
         {done ? (
           <>
-            <div className="flex items-center gap-2 text-green-600 font-bold">
-              <ShieldAlert size={20} aria-hidden="true" />
+            <div className="flex items-center gap-2 text-primary font-bold">
+              <ShieldAlert size={20} className="text-primary" aria-hidden="true" />
               {t('community.reportSuccess')}
             </div>
             <button
               onClick={onClose}
-              className="mt-2 w-full py-2 bg-primary text-white font-bold rounded-full"
+              className="mt-2 w-full py-2.5 bg-primary text-white font-semibold text-sm rounded-md hover:bg-primary-hover transition-colors cursor-pointer"
             >
               {t('common.back')}
             </button>
           </>
         ) : (
           <>
-            <h2 className="font-bold text-lg text-primary flex items-center gap-2">
+            <h2 className="font-heading font-bold text-lg text-primary flex items-center gap-2">
               <Flag size={18} aria-hidden="true" />
               {t('community.report')} {targetType === 'post' ? 'Postingan' : 'Komentar'}
             </h2>
-            <p className="text-sm text-gray-600">Pilih alasan laporan:</p>
+            <p className="text-xs text-gray-600">Pilih alasan laporan pelanggaran:</p>
             <div className="flex flex-col gap-2">
               {REASONS.map(r => (
-                <label key={r} className="flex items-center gap-2 text-sm cursor-pointer">
+                <label key={r} className="flex items-center gap-2.5 text-xs text-gray-700 cursor-pointer p-2 rounded-md hover:bg-surface transition-colors">
                   <input
                     type="radio"
                     name="report-reason"
@@ -113,21 +113,21 @@ const ReportModal: React.FC<ReportModalProps> = ({ targetType, onClose, onSubmit
                     onChange={() => setReason(r)}
                     className="accent-primary"
                   />
-                  {r}
+                  <span>{r}</span>
                 </label>
               ))}
             </div>
             <div className="flex gap-3 mt-2">
               <button
                 onClick={onClose}
-                className="flex-1 py-2 border-2 border-gray-300 text-gray-700 font-bold rounded-full hover:bg-gray-100 transition-colors"
+                className="flex-1 py-2.5 border border-primary/30 text-primary font-semibold text-sm rounded-md hover:bg-primary/5 transition-colors cursor-pointer"
               >
                 {t('detail.cancel')}
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={!reason}
-                className="flex-1 py-2 bg-red-600 text-white font-bold rounded-full hover:bg-red-700 disabled:opacity-50 transition-colors"
+                className="flex-1 py-2.5 bg-red-600 text-white font-semibold text-sm rounded-md hover:bg-red-700 disabled:opacity-50 transition-colors cursor-pointer"
               >
                 Kirim Laporan
               </button>
@@ -135,6 +135,50 @@ const ReportModal: React.FC<ReportModalProps> = ({ targetType, onClose, onSubmit
           </>
         )}
       </div>
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Spoiler wrapper
+// ---------------------------------------------------------------------------
+
+const SpoilerWrapper: React.FC<{ isSpoiler: boolean; children: React.ReactNode }> = ({
+  isSpoiler,
+  children,
+}) => {
+  const { t } = useLanguage();
+  const [revealed, setRevealed] = useState(false);
+
+  if (!isSpoiler) return <>{children}</>;
+
+  return (
+    <div className="relative">
+      <div className={revealed ? '' : 'blur-md select-none pointer-events-none transition-all'}>{children}</div>
+      {!revealed && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 z-10 p-3">
+          <div className="bg-surface/95 border border-primary/20 text-primary rounded-lg px-4 py-2.5 flex items-center gap-3 shadow-md">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
+              <EyeOff size={14} className="text-primary/70" aria-hidden="true" />
+              {t('community.spoilerWarning')}
+            </div>
+            <button
+              onClick={() => setRevealed(true)}
+              className="text-xs font-bold text-primary underline hover:text-primary-hover cursor-pointer"
+            >
+              {t('community.revealSpoiler')}
+            </button>
+          </div>
+        </div>
+      )}
+      {revealed && (
+        <button
+          onClick={() => setRevealed(false)}
+          className="flex items-center gap-1 text-xs text-gray-500 hover:text-primary mt-1 font-medium cursor-pointer"
+        >
+          <EyeOff size={12} aria-hidden="true" /> {t('community.hideSpoiler')}
+        </button>
+      )}
     </div>
   );
 };
@@ -184,22 +228,24 @@ const CommentThread: React.FC<CommentThreadProps> = ({ postId }) => {
   return (
     <div className="flex flex-col gap-3 pt-3 border-t border-primary/10">
       {loading ? (
-        <div className="h-8 bg-gray-200 rounded animate-pulse" />
+        <div className="h-8 bg-surface rounded animate-pulse" />
       ) : comments.length === 0 ? (
-        <p className="text-xs text-gray-400 italic">Belum ada komentar.</p>
+        <p className="text-xs text-gray-500 italic py-1">Belum ada komentar.</p>
       ) : (
         comments.map(c => (
           <SpoilerWrapper key={c.id} isSpoiler={c.isSpoiler}>
-            <div className="flex gap-2 items-start">
-              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0 overflow-hidden">
+            <div className="flex gap-2.5 items-start">
+              <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0 overflow-hidden border border-primary/20">
                 {c.userAvatar
                   ? <img src={c.userAvatar} alt={c.userName} className="w-full h-full object-cover" />
                   : c.userName.charAt(0).toUpperCase()}
               </div>
-              <div className="flex-1 bg-surface/70 rounded-xl px-3 py-2">
-                <span className="text-xs font-bold text-primary">{c.userName}</span>
-                <span className="text-xs text-gray-400 ml-2">{timeAgo(c.createdAt)}</span>
-                <p className="text-sm text-gray-800 mt-0.5 leading-relaxed">{c.content}</p>
+              <div className="flex-1 bg-surface rounded-lg px-3.5 py-2 border border-primary/10">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-primary">{c.userName}</span>
+                  <span className="text-[11px] text-gray-500">{timeAgo(c.createdAt)}</span>
+                </div>
+                <p className="text-xs text-gray-700 mt-1 leading-relaxed">{c.content}</p>
               </div>
             </div>
           </SpoilerWrapper>
@@ -207,26 +253,26 @@ const CommentThread: React.FC<CommentThreadProps> = ({ postId }) => {
       )}
 
       {user ? (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 pt-1">
           <div className="flex gap-2 items-center">
             <input
               type="text"
               value={text}
               onChange={e => setText(e.target.value)}
               placeholder={t('community.commentPlaceholder')}
-              className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary transition-colors bg-background"
+              className="flex-1 px-3.5 py-2 text-xs border border-primary/20 rounded-md outline-none focus:border-primary transition-colors bg-background text-primary"
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handlePost(); } }}
             />
             <button
               onClick={handlePost}
               disabled={posting || !text.trim()}
-              className="p-2 bg-primary text-white rounded-xl disabled:opacity-50 hover:bg-primary/90 transition-colors"
+              className="p-2 bg-primary text-white rounded-md disabled:opacity-50 hover:bg-primary-hover transition-colors cursor-pointer"
               aria-label="Kirim komentar"
             >
-              <Send size={16} aria-hidden="true" />
+              <Send size={15} aria-hidden="true" />
             </button>
           </div>
-          <label className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer">
+          <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer select-none">
             <input
               type="checkbox"
               checked={isSpoilerComment}
@@ -237,51 +283,7 @@ const CommentThread: React.FC<CommentThreadProps> = ({ postId }) => {
           </label>
         </div>
       ) : (
-        <p className="text-xs text-gray-500">{t('comments.loginToComment')}</p>
-      )}
-    </div>
-  );
-};
-
-// ---------------------------------------------------------------------------
-// Spoiler wrapper
-// ---------------------------------------------------------------------------
-
-const SpoilerWrapper: React.FC<{ isSpoiler: boolean; children: React.ReactNode }> = ({
-  isSpoiler,
-  children,
-}) => {
-  const { t } = useLanguage();
-  const [revealed, setRevealed] = useState(false);
-
-  if (!isSpoiler) return <>{children}</>;
-
-  return (
-    <div className="relative">
-      <div className={revealed ? '' : 'blur-sm select-none pointer-events-none'}>{children}</div>
-      {!revealed && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 z-10">
-          <div className="bg-black/70 text-white rounded-xl px-4 py-2 flex flex-col items-center gap-1 backdrop-blur-sm">
-            <div className="flex items-center gap-1 text-xs font-bold text-yellow-400">
-              <AlertTriangle size={14} aria-hidden="true" />
-              {t('community.spoilerWarning')}
-            </div>
-            <button
-              onClick={() => setRevealed(true)}
-              className="text-xs text-white underline hover:text-yellow-200 mt-0.5"
-            >
-              {t('community.revealSpoiler')}
-            </button>
-          </div>
-        </div>
-      )}
-      {revealed && (
-        <button
-          onClick={() => setRevealed(false)}
-          className="flex items-center gap-1 text-xs text-gray-500 hover:text-primary mt-1"
-        >
-          <EyeOff size={12} aria-hidden="true" /> {t('community.hideSpoiler')}
-        </button>
+        <p className="text-xs text-gray-500 py-1">{t('comments.loginToComment')}</p>
       )}
     </div>
   );
@@ -303,37 +305,40 @@ const PostCard: React.FC<PostCardProps> = ({ post, onLike, onReport }) => {
   const [showComments, setShowComments] = useState(false);
 
   return (
-    <article className="bg-surface/70 border border-primary/10 rounded-2xl p-5 flex flex-col gap-3">
-      {/* Author */}
+    <article className="bg-surface rounded-xl border border-primary/15 p-5 flex flex-col gap-3.5 shadow-sm">
+      {/* Author Header */}
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-full bg-primary/10 overflow-hidden shrink-0">
-          {post.authorAvatar
-            ? <img src={post.authorAvatar} alt={post.authorName} className="w-full h-full object-cover" />
-            : <div className="w-full h-full flex items-center justify-center text-primary font-bold text-sm">{post.authorName.charAt(0).toUpperCase()}</div>
-          }
+        <div className="w-9 h-9 rounded-md bg-primary/10 overflow-hidden shrink-0 border border-primary/20 flex items-center justify-center">
+          {post.authorAvatar ? (
+            <img src={post.authorAvatar} alt={post.authorName} className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-primary font-heading font-bold text-sm">
+              {post.authorName.charAt(0).toUpperCase()}
+            </span>
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-bold text-primary text-sm">{post.authorName}</span>
+            <span className="font-heading font-bold text-primary text-sm">{post.authorName}</span>
             {post.isAuthorBadge && (
-              <span className="px-2 py-0.5 bg-primary text-white text-[10px] font-bold rounded-full">
+              <span className="px-2 py-0.5 bg-primary text-white text-[10px] font-semibold rounded-md">
                 {t('community.authorBadge')}
               </span>
             )}
             {post.isSpoiler && (
-              <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 border border-yellow-300 text-[10px] font-bold rounded-full flex items-center gap-0.5">
-                <Eye size={10} aria-hidden="true" />
+              <span className="px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 text-[10px] font-semibold rounded-md flex items-center gap-1">
+                <EyeOff size={11} aria-hidden="true" />
                 {t('community.spoilerWarning')}
               </span>
             )}
           </div>
-          <span className="text-xs text-gray-400">{timeAgo(post.createdAt)}</span>
+          <span className="text-[11px] text-gray-500">{timeAgo(post.createdAt)}</span>
         </div>
 
         {user && (
           <button
             onClick={() => onReport('post', post.id)}
-            className="p-1.5 text-gray-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50"
+            className="p-1.5 text-gray-400 hover:text-red-500 transition-colors rounded-md hover:bg-red-50 cursor-pointer"
             aria-label={t('community.report')}
             title={t('community.report')}
           >
@@ -345,27 +350,31 @@ const PostCard: React.FC<PostCardProps> = ({ post, onLike, onReport }) => {
       {/* Content */}
       <SpoilerWrapper isSpoiler={post.isSpoiler}>
         <div className="flex flex-col gap-1.5">
-          {post.title && <h3 className="font-bold text-primary text-base">{post.title}</h3>}
+          {post.title && (
+            <h3 className="font-heading font-bold text-primary text-base leading-snug">
+              {post.title}
+            </h3>
+          )}
           <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap">{post.content}</p>
         </div>
       </SpoilerWrapper>
 
       {/* Actions */}
-      <div className="flex items-center gap-4 pt-1">
+      <div className="flex items-center gap-5 pt-1 border-t border-primary/10 text-xs text-gray-600">
         <button
           onClick={() => onLike(post.id)}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-red-500 transition-colors"
+          className="flex items-center gap-1.5 hover:text-red-600 transition-colors cursor-pointer font-medium"
           aria-label={t('community.like')}
         >
-          <Heart size={16} aria-hidden="true" />
+          <Heart size={15} aria-hidden="true" />
           <span>{post.likesCount}</span>
         </button>
         <button
           onClick={() => setShowComments(prev => !prev)}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-primary transition-colors"
+          className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer font-medium"
         >
-          <MessageSquare size={16} aria-hidden="true" />
-          <span>{post.commentsCount}</span>
+          <MessageSquare size={15} aria-hidden="true" />
+          <span>{post.commentsCount} {t('community.posts')}</span>
         </button>
       </div>
 
@@ -429,22 +438,22 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ communityId, onCreated,
     return (
       <button
         onClick={() => { setOpen(true); setTimeout(() => textareaRef.current?.focus(), 50); }}
-        className="flex items-center gap-2 w-full px-5 py-3 border-2 border-dashed border-primary/30 rounded-2xl text-primary/70 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all font-semibold text-sm"
+        className="flex items-center justify-center gap-2 w-full py-3 px-4 border border-dashed border-primary/30 rounded-xl bg-surface/40 hover:bg-surface text-primary transition-all font-semibold text-sm cursor-pointer"
       >
-        <Plus size={18} aria-hidden="true" />
+        <Plus size={16} aria-hidden="true" />
         {t('community.createPost')}
       </button>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-surface/70 border border-primary/20 rounded-2xl p-5 flex flex-col gap-3">
+    <form onSubmit={handleSubmit} className="bg-surface rounded-xl border border-primary/20 p-5 flex flex-col gap-3 shadow-sm">
       <input
         type="text"
         value={title}
         onChange={e => setTitle(e.target.value)}
         placeholder={t('community.postTitlePlaceholder')}
-        className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-primary transition-colors bg-background font-semibold"
+        className="w-full px-3.5 py-2.5 border border-primary/20 rounded-md text-sm outline-none focus:border-primary transition-colors bg-background font-semibold text-primary"
         maxLength={120}
       />
       <textarea
@@ -453,11 +462,11 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ communityId, onCreated,
         onChange={e => setContent(e.target.value)}
         placeholder={t('community.postContentPlaceholder')}
         rows={4}
-        className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-primary transition-colors bg-background resize-none"
+        className="w-full px-3.5 py-2.5 border border-primary/20 rounded-md text-sm outline-none focus:border-primary transition-colors bg-background resize-none text-primary"
         maxLength={2000}
         required
       />
-      <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+      <label className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer select-none">
         <input
           type="checkbox"
           checked={isSpoiler}
@@ -466,19 +475,19 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ communityId, onCreated,
         />
         {t('community.isSpoiler')}
       </label>
-      {error && <p role="alert" className="text-red-500 text-xs">{error}</p>}
-      <div className="flex gap-3">
+      {error && <p role="alert" className="text-red-500 text-xs font-medium">{error}</p>}
+      <div className="flex gap-3 pt-1">
         <button
           type="button"
           onClick={() => { setOpen(false); setTitle(''); setContent(''); setError(''); }}
-          className="flex-1 py-2 border-2 border-gray-300 text-gray-700 font-bold rounded-full hover:bg-gray-100 transition-colors text-sm"
+          className="flex-1 py-2 px-4 border border-primary/30 text-primary font-semibold rounded-md hover:bg-primary/5 transition-colors text-sm cursor-pointer"
         >
           {t('detail.cancel')}
         </button>
         <button
           type="submit"
           disabled={posting || !content.trim()}
-          className="flex-1 py-2 bg-primary text-white font-bold rounded-full hover:bg-primary/90 disabled:opacity-50 transition-colors text-sm"
+          className="flex-1 py-2 px-4 bg-primary text-white font-semibold rounded-md hover:bg-primary-hover disabled:opacity-50 transition-colors text-sm cursor-pointer"
         >
           {posting ? t('common.loading') : 'Posting'}
         </button>
@@ -513,10 +522,11 @@ export const CommunityDetail: React.FC = () => {
       getCommunityDetail(id, user?.id),
       listCommunityPosts(id),
     ]).then(([comm, postList]) => {
-      if (cancelled) return;
-      setCommunity(comm);
-      setPosts(postList);
-      setLoading(false);
+      if (!cancelled) {
+        setCommunity(comm);
+        setPosts(postList);
+        setLoading(false);
+      }
     }).catch(() => {
       if (!cancelled) { setError(true); setLoading(false); }
     });
@@ -545,7 +555,6 @@ export const CommunityDetail: React.FC = () => {
     setCommunity(prev => prev ? { ...prev, postCount: prev.postCount + 1 } : prev);
   };
 
-  // Is user the creator/owner of this community?
   const isAuthorOfCommunity = Boolean(
     user && community?.creatorId && community.creatorId === user.id,
   );
@@ -554,11 +563,13 @@ export const CommunityDetail: React.FC = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
-        <div className="w-full h-48 bg-gray-300 animate-pulse" />
-        <main className="flex-1 w-full max-w-3xl mx-auto px-4 py-8 flex flex-col gap-4">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="h-32 bg-gray-200 rounded-2xl animate-pulse" />
-          ))}
+        <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-8 flex flex-col gap-6">
+          <div className="h-44 bg-surface rounded-xl animate-pulse" />
+          <div className="flex flex-col gap-4">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-28 bg-surface rounded-xl animate-pulse" />
+            ))}
+          </div>
         </main>
       </div>
     );
@@ -570,7 +581,7 @@ export const CommunityDetail: React.FC = () => {
         <p className="text-red-500 font-semibold">{t('common.notFound')}</p>
         <button
           onClick={() => navigate(-1)}
-          className="px-5 py-2 bg-primary text-white font-bold rounded-full"
+          className="px-5 py-2.5 bg-primary text-white font-semibold rounded-md hover:bg-primary-hover transition-colors cursor-pointer"
         >
           {t('common.back')}
         </button>
@@ -582,73 +593,107 @@ export const CommunityDetail: React.FC = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
-      {/* Cover */}
-      <div className="w-full h-48 md:h-56 relative overflow-hidden bg-primary/30">
-        {community.coverUrl && (
-          <img src={community.coverUrl} alt="" className="w-full h-full object-cover opacity-60" />
-        )}
-        <button
-          onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 text-white flex items-center gap-1 text-sm font-bold bg-black/30 px-3 py-1.5 rounded-full backdrop-blur-sm hover:bg-black/50 transition-colors"
-        >
-          <ChevronLeft size={18} aria-hidden="true" />
-          {t('common.back')}
-        </button>
-      </div>
+      <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 py-8 flex flex-col gap-6">
+        {/* Back Link */}
+        <div>
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary/80 hover:text-primary transition-colors cursor-pointer"
+          >
+            <ChevronLeft size={16} aria-hidden="true" />
+            {t('common.back')}
+          </button>
+        </div>
 
-      <main className="flex-1 w-full max-w-3xl mx-auto px-4 sm:px-6 py-6 flex flex-col gap-6 -mt-12 relative z-10">
-        {/* Community header card */}
-        <div className="bg-background border border-primary/10 rounded-2xl p-5 shadow-sm flex gap-4 items-start">
-          <div className="w-16 h-16 rounded-full overflow-hidden bg-primary/10 shrink-0 border-2 border-background shadow">
-            {community.avatarUrl
-              ? <img src={community.avatarUrl} alt={community.name} className="w-full h-full object-cover" />
-              : <div className="w-full h-full flex items-center justify-center text-primary font-bold text-2xl">{community.name.charAt(0)}</div>
-            }
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-3 flex-wrap">
-              <div>
-                <h1 className="font-bold text-xl text-primary leading-tight">{community.name}</h1>
-                <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
-                  <span className="flex items-center gap-1">
-                    <Users size={12} aria-hidden="true" />
-                    {community.memberCount.toLocaleString()} {t('community.members')}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <MessageSquare size={12} aria-hidden="true" />
-                    {community.postCount} {t('community.posts')}
-                  </span>
-                </div>
-              </div>
-              {user && (
-                <button
-                  onClick={handleToggleJoin}
-                  disabled={joinBusy}
-                  aria-pressed={community.isMember}
-                  className={`px-5 py-2 rounded-full font-bold text-sm transition-colors disabled:opacity-60 shrink-0 ${
-                    community.isMember
-                      ? 'bg-primary/10 text-primary border border-primary/30 hover:bg-red-50 hover:text-red-600'
-                      : 'bg-primary text-white hover:bg-primary/90'
-                  }`}
-                >
-                  {community.isMember ? t('community.joined') : t('community.join')}
-                </button>
+        {/* Community Hero Card */}
+        <div className="bg-surface rounded-xl border border-primary/20 p-6 sm:p-7 flex flex-col md:flex-row md:items-start justify-between gap-6 shadow-sm">
+          <div className="flex items-start gap-4 flex-1 min-w-0">
+            {/* Avatar */}
+            <div className="w-16 h-16 rounded-xl bg-primary/10 border border-primary/20 shrink-0 flex items-center justify-center overflow-hidden">
+              {community.avatarUrl ? (
+                <img src={community.avatarUrl} alt={community.name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="font-heading font-bold text-2xl text-primary">
+                  {community.name.charAt(0).toUpperCase()}
+                </span>
               )}
             </div>
-            {community.description && (
-              <p className="text-sm text-gray-600 mt-2 leading-relaxed">{community.description}</p>
-            )}
+
+            {/* Info */}
+            <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[11px] font-semibold text-primary/70 bg-primary/10 px-2 py-0.5 rounded-md">
+                  {community.type === 'creator' ? t('community.officialBadge') : t('community.tabComic')}
+                </span>
+                {community.type === 'comic' && community.targetId && (
+                  <Link
+                    to={`/comic/${community.targetId}`}
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
+                  >
+                    <BookOpen size={11} aria-hidden="true" />
+                    Lihat Komik
+                  </Link>
+                )}
+              </div>
+
+              <h1 className="font-heading font-bold text-2xl text-primary leading-tight">
+                {community.name}
+              </h1>
+
+              {community.description && (
+                <p className="text-xs sm:text-sm text-gray-700 leading-relaxed mt-0.5">
+                  {community.description}
+                </p>
+              )}
+
+              {/* Stats */}
+              <div className="flex items-center gap-5 text-xs text-gray-600 pt-2 mt-1 border-t border-primary/10">
+                <span className="flex items-center gap-1.5 font-medium">
+                  <Users size={13} className="text-primary/70" aria-hidden="true" />
+                  {community.memberCount.toLocaleString()} {t('community.members')}
+                </span>
+                <span className="flex items-center gap-1.5 font-medium">
+                  <MessageSquare size={13} className="text-primary/70" aria-hidden="true" />
+                  {community.postCount} {t('community.posts')}
+                </span>
+              </div>
+            </div>
           </div>
+
+          {/* Join / Leave button */}
+          {user ? (
+            <div className="shrink-0">
+              <button
+                onClick={handleToggleJoin}
+                disabled={joinBusy}
+                aria-pressed={community.isMember}
+                className={`w-full md:w-auto px-6 py-2.5 rounded-md font-semibold text-sm transition-colors disabled:opacity-60 cursor-pointer ${
+                  community.isMember
+                    ? 'border border-primary/30 text-primary hover:bg-red-50 hover:text-red-600 hover:border-red-300'
+                    : 'bg-primary text-white hover:bg-primary-hover'
+                }`}
+              >
+                {community.isMember ? t('community.joined') : t('community.join')}
+              </button>
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              className="w-full md:w-auto px-6 py-2.5 rounded-md font-semibold text-sm text-center bg-primary text-white hover:bg-primary-hover transition-colors shrink-0"
+            >
+              {t('community.join')}
+            </Link>
+          )}
         </div>
 
         {/* Rules (collapsible) */}
         {community.rules && (
-          <details className="bg-surface/60 border border-primary/10 rounded-xl">
-            <summary className="px-5 py-3 font-bold text-sm text-primary cursor-pointer flex items-center gap-2">
-              <AlertTriangle size={15} aria-hidden="true" />
+          <details className="bg-surface/50 border border-primary/15 rounded-xl">
+            <summary className="px-5 py-3 font-heading font-bold text-xs text-primary cursor-pointer flex items-center gap-2 select-none">
+              <Info size={14} className="text-primary/70" aria-hidden="true" />
               {t('community.rules')}
             </summary>
-            <div className="px-5 pb-4 text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+            <div className="px-5 pb-4 text-xs text-gray-700 leading-relaxed whitespace-pre-line border-t border-primary/10 pt-2">
               {community.rules}
             </div>
           </details>
@@ -666,14 +711,14 @@ export const CommunityDetail: React.FC = () => {
         {/* Feed */}
         <section aria-label="Feed komunitas" className="flex flex-col gap-4">
           {posts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
-              <MessageSquare size={32} className="text-primary/30" aria-hidden="true" />
-              <p className="text-gray-500 text-sm">{t('community.emptyPosts')}</p>
+            <div className="flex flex-col items-center justify-center py-16 gap-3 text-center bg-surface/40 rounded-xl border border-primary/10 p-8">
+              <MessageSquare size={28} className="text-primary/40" aria-hidden="true" />
+              <p className="text-gray-600 text-sm">{t('community.emptyPosts')}</p>
               {!community.isMember && user && (
                 <button
                   onClick={handleToggleJoin}
                   disabled={joinBusy}
-                  className="mt-1 px-5 py-2 bg-primary text-white font-bold rounded-full text-sm hover:bg-primary/90 disabled:opacity-60"
+                  className="mt-1 px-5 py-2.5 bg-primary text-white font-semibold rounded-md text-sm hover:bg-primary-hover disabled:opacity-60 cursor-pointer"
                 >
                   {t('community.join')}
                 </button>
@@ -690,18 +735,6 @@ export const CommunityDetail: React.FC = () => {
             ))
           )}
         </section>
-
-        {/* Link back to comic/creator if applicable */}
-        {community.type === 'comic' && community.targetId && (
-          <div className="text-center">
-            <Link
-              to={`/comic/${community.targetId}`}
-              className="text-sm text-primary hover:underline font-semibold"
-            >
-              ← Lihat halaman komik ini
-            </Link>
-          </div>
-        )}
       </main>
 
       <Footer />
@@ -713,8 +746,7 @@ export const CommunityDetail: React.FC = () => {
           targetId={reportTarget.id}
           onClose={() => setReportTarget(null)}
           onSubmit={() => {
-            // Laporan disimpan secara lokal / dikirim ke moderator
-            // Dalam mode demo, hanya konfirmasi UI
+            // Laporan dikonfirmasi ke UI
           }}
         />
       )}
