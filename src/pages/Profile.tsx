@@ -7,7 +7,7 @@ import { listFavorites, type FavoriteEntry } from '../services/favorites';
 import { listMyComics, type CreatorComic } from '../services/creatorComics';
 import { getAuthorStats, type WorkStat } from '../services/analytics';
 
-import { BookOpen, Heart, Mail, Check, X, Settings2, Eye, BarChart3, ShieldCheck, Users, MessageSquare, Coins, AlertTriangle } from 'lucide-react';
+import { BookOpen, Heart, Mail, Check, X, Settings2, Eye, BarChart3, ShieldCheck, Users, MessageSquare, Coins } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getMyCommunities } from '../services/community';
 import { getCreatorEarningsSummary } from '../services/wallet';
@@ -210,23 +210,23 @@ export const Profile: React.FC = () => {
           <div className="flex items-center gap-2 mb-2">
             <Link
               to="/wallet"
-              className="px-4 py-2 bg-amber-100/90 border border-amber-300 text-amber-900 rounded-full text-sm font-bold hover:bg-amber-200 transition-colors flex items-center gap-1.5"
+              className="px-3.5 py-2 bg-surface border border-primary/20 text-primary rounded-md text-xs font-semibold hover:bg-primary/5 transition-colors flex items-center gap-1.5"
             >
-              <Coins size={15} className="text-amber-600" aria-hidden="true" />
+              <Coins size={14} className="text-primary/70" aria-hidden="true" />
               <span>{t('nav.wallet')}</span>
-              <span className="text-[10px] bg-amber-400/40 text-amber-900 px-1.5 py-0.2 rounded font-semibold">DEMO</span>
+              <span className="text-[10px] text-primary/70 bg-primary/10 px-1.5 py-0.5 rounded font-semibold">Demo</span>
             </Link>
             {isAdmin && (
               <Link
                 to="/admin"
-                className="px-4 py-2 border-2 border-red-500 text-red-500 rounded-full text-sm font-bold hover:bg-red-500 hover:text-white transition-colors flex items-center gap-1.5"
+                className="px-3.5 py-2 border border-red-500 text-red-600 rounded-md text-xs font-semibold hover:bg-red-50 transition-colors flex items-center gap-1.5"
               >
-                <ShieldCheck size={15} aria-hidden="true" />
+                <ShieldCheck size={14} aria-hidden="true" />
                 {t('profile.adminDashboard')}
               </Link>
             )}
             {isAuthor && activeTab === 'KOMIK' && (
-              <Link to="/add-comic" className="px-4 py-2 border-2 border-primary text-primary rounded-full text-sm font-bold hover:bg-primary hover:text-white transition-colors">
+              <Link to="/add-comic" className="px-3.5 py-2 border border-primary/30 text-primary rounded-md text-xs font-semibold hover:bg-primary/5 transition-colors">
                 {t('profile.addComic')}
               </Link>
             )}
@@ -240,21 +240,21 @@ export const Profile: React.FC = () => {
             {communityLoading ? (
               <div className="flex flex-col gap-3">
                 {[1, 2, 3].map(i => (
-                  <div key={i} className="h-20 bg-gray-200 rounded-2xl animate-pulse" />
+                  <div key={i} className="h-20 bg-surface rounded-xl border border-primary/10 animate-pulse" />
                 ))}
               </div>
             ) : myCommunities.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
-                <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center">
-                  <MessageSquare size={28} className="text-primary" aria-hidden="true" />
+              <div className="flex flex-col items-center justify-center py-16 gap-3 text-center bg-surface/50 rounded-xl border border-primary/10 p-8">
+                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <MessageSquare size={24} className="text-primary" aria-hidden="true" />
                 </div>
-                <h3 className="text-xl font-bold text-primary">Belum ada komunitas</h3>
-                <p className="text-sm text-gray-600 max-w-sm">
+                <h3 className="text-lg font-heading font-bold text-primary">Belum ada komunitas</h3>
+                <p className="text-xs text-gray-600 max-w-sm">
                   Bergabunglah ke komunitas untuk berdiskusi dengan sesama pembaca dan kreator.
                 </p>
                 <Link
                   to="/community"
-                  className="mt-2 px-5 py-2 bg-primary text-white font-bold rounded-full hover:bg-primary/90 transition-colors"
+                  className="mt-2 px-5 py-2.5 bg-primary text-white font-semibold text-xs rounded-md hover:bg-primary-hover transition-colors"
                 >
                   {t('community.tabAll')}
                 </Link>
@@ -265,33 +265,33 @@ export const Profile: React.FC = () => {
                   <Link
                     key={c.id}
                     to={`/community/${c.id}`}
-                    className="flex items-center gap-4 bg-surface/70 hover:bg-surface border border-primary/10 rounded-2xl p-4 transition-colors group"
+                    className="flex items-center gap-4 bg-surface hover:bg-surface/90 border border-primary/15 rounded-xl p-4 transition-colors group shadow-sm"
                   >
-                    <div className="w-12 h-12 rounded-full overflow-hidden bg-primary/10 shrink-0">
+                    <div className="w-11 h-11 rounded-lg overflow-hidden bg-primary/10 border border-primary/20 shrink-0 flex items-center justify-center">
                       {c.avatarUrl
                         ? <img src={c.avatarUrl} alt={c.name} className="w-full h-full object-cover" />
-                        : <div className="w-full h-full flex items-center justify-center text-primary font-bold">{c.name.charAt(0)}</div>
+                        : <span className="text-primary font-heading font-bold text-sm">{c.name.charAt(0)}</span>
                       }
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-primary group-hover:underline truncate">{c.name}</p>
-                      <p className="text-xs text-gray-500 flex items-center gap-2 mt-0.5">
-                        <span className="flex items-center gap-1">
-                          <Users size={11} aria-hidden="true" />
+                      <p className="font-heading font-bold text-sm text-primary group-hover:underline truncate">{c.name}</p>
+                      <p className="text-xs text-gray-600 flex items-center gap-3 mt-0.5">
+                        <span className="flex items-center gap-1 font-medium">
+                          <Users size={12} className="text-primary/70" aria-hidden="true" />
                           {c.memberCount.toLocaleString()} {t('community.members')}
                         </span>
-                        <span className="flex items-center gap-1">
-                          <MessageSquare size={11} aria-hidden="true" />
+                        <span className="flex items-center gap-1 font-medium">
+                          <MessageSquare size={12} className="text-primary/70" aria-hidden="true" />
                           {c.postCount} {t('community.posts')}
                         </span>
                       </p>
                     </div>
-                    <span className="text-xs font-bold text-primary/50 group-hover:text-primary transition-colors">→</span>
+                    <span className="text-xs font-semibold text-primary/50 group-hover:text-primary transition-colors">→</span>
                   </Link>
                 ))}
                 <Link
                   to="/community"
-                  className="text-center text-sm text-primary font-semibold hover:underline mt-2"
+                  className="text-center text-xs text-primary font-semibold hover:underline mt-2"
                 >
                   Temukan lebih banyak komunitas →
                 </Link>
@@ -445,69 +445,68 @@ export const Profile: React.FC = () => {
           ) : (
             <div className="flex flex-col gap-6">
               {/* Ringkasan follower */}
-              <div className="bg-surface p-6 rounded-2xl flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <Users size={24} className="text-primary" aria-hidden="true" />
+              <div className="bg-surface p-6 rounded-xl border border-primary/15 flex items-center gap-4 shadow-sm">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                  <Users size={22} className="text-primary" aria-hidden="true" />
                 </div>
                 <div className="flex flex-col text-left">
-                  <span className="text-3xl font-bold text-primary leading-none">{statFollowers}</span>
-                  <span className="text-sm text-gray-600 mt-1">{t('profile.totalFollowers')}</span>
+                  <span className="text-3xl font-heading font-bold text-primary leading-none">{statFollowers}</span>
+                  <span className="text-xs text-gray-600 mt-1 font-medium">{t('profile.totalFollowers')}</span>
                 </div>
               </div>
 
-              {/* Ringkasan Pendapatan Koin (PRD §5.3 - berlabel DEMO) */}
-              <div className="bg-surface border-2 border-amber-400/30 p-6 rounded-2xl flex flex-col gap-4 text-left">
+              {/* Ringkasan Pendapatan Koin */}
+              <div className="bg-surface border border-primary/15 p-6 rounded-xl flex flex-col gap-4 text-left shadow-sm">
                 <div className="flex items-center justify-between flex-wrap gap-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-                      <Coins size={20} className="text-amber-600" aria-hidden="true" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                      <Coins size={18} className="text-primary" aria-hidden="true" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-primary flex items-center gap-2">
+                      <h4 className="font-heading font-bold text-primary text-base flex items-center gap-2">
                         {t('wallet.creatorEarnings')}
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 border border-amber-400 text-amber-800 text-[10px] font-bold">
-                          <AlertTriangle size={10} aria-hidden="true" />
-                          DEMO
+                        <span className="text-[11px] font-semibold text-primary/70 bg-primary/10 px-2 py-0.5 rounded-md">
+                          Simulasi • Sandbox
                         </span>
                       </h4>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-600 mt-0.5">
                         {t('wallet.payoutNotice')}
                       </p>
                     </div>
                   </div>
                   <Link
                     to="/wallet"
-                    className="text-xs font-bold text-primary hover:underline"
+                    className="text-xs font-semibold text-primary hover:underline"
                   >
                     Buka Dompet →
                   </Link>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-primary/10">
-                  <div className="bg-background/80 rounded-xl p-3 border border-primary/10">
-                    <p className="text-xs text-gray-500">{t('wallet.grossEarnings')}</p>
-                    <p className="text-xl font-bold text-primary mt-1">
+                  <div className="bg-background/80 rounded-lg p-3.5 border border-primary/10">
+                    <p className="text-xs text-gray-600">{t('wallet.grossEarnings')}</p>
+                    <p className="text-xl font-heading font-bold text-primary mt-1">
                       {creatorEarnings?.grossCoins ?? 0} <span className="text-xs font-normal">Koin</span>
                     </p>
-                    <p className="text-[11px] text-gray-400 mt-0.5">
+                    <p className="text-[11px] text-gray-500 mt-0.5">
                       Pendapatan kotor simulasi
                     </p>
                   </div>
 
-                  <div className="bg-background/80 rounded-xl p-3 border border-primary/10">
-                    <p className="text-xs text-gray-500">{t('wallet.platformFee')}</p>
-                    <p className="text-xl font-bold text-gray-600 mt-1">
+                  <div className="bg-background/80 rounded-lg p-3.5 border border-primary/10">
+                    <p className="text-xs text-gray-600">{t('wallet.platformFee')}</p>
+                    <p className="text-xl font-heading font-bold text-gray-600 mt-1">
                       {creatorEarnings?.platformFeeCoins ?? 0} <span className="text-xs font-normal">Koin</span>
                     </p>
-                    <p className="text-[11px] text-gray-400 mt-0.5">30% untuk platform</p>
+                    <p className="text-[11px] text-gray-500 mt-0.5">30% untuk platform</p>
                   </div>
 
-                  <div className="bg-amber-50/80 rounded-xl p-3 border border-amber-300">
-                    <p className="text-xs text-amber-800 font-medium">{t('wallet.netEarnings')}</p>
-                    <p className="text-xl font-bold text-amber-700 mt-1">
+                  <div className="bg-background/80 rounded-lg p-3.5 border border-primary/20">
+                    <p className="text-xs text-primary font-semibold">{t('wallet.netEarnings')}</p>
+                    <p className="text-xl font-heading font-bold text-primary mt-1">
                       {creatorEarnings?.netCoins ?? 0} <span className="text-xs font-normal">Koin</span>
                     </p>
-                    <p className="text-[11px] text-amber-600 font-semibold mt-0.5">
+                    <p className="text-[11px] text-gray-600 font-medium mt-0.5">
                       ≈ Rp {(creatorEarnings?.estimatedNetIdr ?? 0).toLocaleString('id-ID')} (Simulasi)
                     </p>
                   </div>
