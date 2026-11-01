@@ -12,7 +12,6 @@ import {
   ZoomOut,
   Lock,
   Coins,
-  AlertTriangle,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -209,7 +208,7 @@ export const ReadingMode: React.FC = () => {
         <button
           onClick={() => navigate(-1)}
           aria-label={t('common.back')}
-          className="hover:text-white transition-colors shrink-0"
+          className="hover:text-white transition-colors shrink-0 text-white cursor-pointer"
         >
           <ChevronLeft size={28} />
         </button>
@@ -224,14 +223,14 @@ export const ReadingMode: React.FC = () => {
         </div>
 
         {/* Kontrol baca (P4) — hanya untuk karya creator yang bisa dibaca */}
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1 shrink-0 text-white">
           {isCreator && (
             <>
               <button
                 onClick={zoomOut}
                 aria-label={t('read.zoomOut')}
                 title={t('read.zoomOut')}
-                className="p-2 rounded hover:bg-white/15 transition-colors"
+                className="p-2 rounded hover:bg-white/15 transition-colors cursor-pointer"
               >
                 <ZoomOut size={20} />
               </button>
@@ -240,7 +239,7 @@ export const ReadingMode: React.FC = () => {
                 onClick={zoomIn}
                 aria-label={t('read.zoomIn')}
                 title={t('read.zoomIn')}
-                className="p-2 rounded hover:bg-white/15 transition-colors"
+                className="p-2 rounded hover:bg-white/15 transition-colors cursor-pointer"
               >
                 <ZoomIn size={20} />
               </button>
@@ -249,7 +248,7 @@ export const ReadingMode: React.FC = () => {
                 aria-label={night ? t('read.day') : t('read.night')}
                 aria-pressed={night}
                 title={night ? t('read.day') : t('read.night')}
-                className="p-2 rounded hover:bg-white/15 transition-colors"
+                className="p-2 rounded hover:bg-white/15 transition-colors cursor-pointer"
               >
                 {night ? <Sun size={20} /> : <Moon size={20} />}
               </button>
@@ -267,44 +266,43 @@ export const ReadingMode: React.FC = () => {
       ) : isLocked && lockedChapter ? (
         /* Chapter Premium Terkunci */
         <main className="flex-1 w-full flex items-center justify-center p-6">
-          <div className="max-w-md w-full bg-surface border-2 border-amber-400/40 rounded-3xl p-8 flex flex-col items-center gap-5 text-center shadow-2xl">
-            <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center shadow-inner">
-              <Lock size={32} className="text-amber-600" aria-hidden="true" />
+          <div className="max-w-md w-full bg-surface border border-primary/20 rounded-xl p-8 flex flex-col items-center gap-5 text-center shadow-lg">
+            <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+              <Lock size={26} aria-hidden="true" />
             </div>
 
             <div className="flex flex-col gap-1 items-center">
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-100 border border-amber-400 text-amber-800 text-[11px] font-bold tracking-wider">
-                <AlertTriangle size={12} aria-hidden="true" />
-                DEMO / SIMULASI
+              <span className="text-[11px] font-semibold text-primary/70 bg-primary/10 px-2.5 py-0.5 rounded-md">
+                Simulasi • Sandbox
               </span>
-              <h1 className="text-2xl font-bold font-heading text-primary mt-2">
+              <h1 className="text-2xl font-bold font-heading text-primary mt-1">
                 Chapter Khusus Koin
               </h1>
-              <p className="text-sm text-gray-600">
+              <p className="text-xs text-gray-600">
                 {comic?.title} — Chapter {lockedChapter.number}
               </p>
             </div>
 
-            <div className="w-full bg-amber-50/80 border border-amber-200 rounded-2xl p-4 flex justify-between items-center text-sm">
-              <div className="flex items-center gap-2">
-                <Coins size={18} className="text-amber-600" aria-hidden="true" />
-                <span className="text-gray-700 font-medium">Harga Chapter:</span>
+            <div className="w-full bg-background/80 border border-primary/15 rounded-lg p-3.5 flex justify-between items-center text-xs">
+              <div className="flex items-center gap-2 font-medium text-gray-700">
+                <Coins size={15} className="text-primary/70" aria-hidden="true" />
+                <span>Harga Chapter:</span>
               </div>
-              <span className="text-lg font-bold text-amber-700">
+              <span className="font-heading font-bold text-base text-primary">
                 {lockedChapter.priceCoins || 10} Koin
               </span>
             </div>
 
-            <div className="w-full flex justify-between items-center text-xs text-gray-500 px-1">
-              <span>Saldo Koin Kamu:</span>
+            <div className="w-full flex justify-between items-center text-xs text-gray-600 px-1">
+              <span>Saldo Koin Anda:</span>
               <span className="font-bold text-primary text-sm flex items-center gap-1">
-                <Coins size={14} className="text-amber-500" />
+                <Coins size={13} className="text-primary/70" />
                 {userCoins} Koin
               </span>
             </div>
 
             {unlockError && (
-              <p role="alert" className="text-red-500 text-xs w-full bg-red-50 p-2.5 rounded-xl border border-red-200 font-medium">
+              <p role="alert" className="text-red-600 text-xs w-full bg-red-50 p-2.5 rounded-md border border-red-200 font-medium">
                 {unlockError}
               </p>
             )}
@@ -314,24 +312,24 @@ export const ReadingMode: React.FC = () => {
                 <button
                   onClick={handleUnlock}
                   disabled={unlocking}
-                  className="w-full py-3 bg-primary text-white font-bold rounded-full hover:bg-primary/90 disabled:opacity-50 transition-colors shadow flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-primary text-white font-semibold rounded-md hover:bg-primary-hover disabled:opacity-50 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm text-sm"
                 >
-                  <Lock size={16} aria-hidden="true" />
-                  {unlocking ? 'Membuka...' : `Buka Sekarang (${lockedChapter.priceCoins || 10} Koin)`}
+                  <Lock size={15} aria-hidden="true" />
+                  {unlocking ? 'Membuka...' : `Buka Chapter (${lockedChapter.priceCoins || 10} Koin)`}
                 </button>
               ) : (
                 <Link
                   to="/wallet"
-                  className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-full transition-colors shadow flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-primary text-white font-semibold rounded-md hover:bg-primary-hover transition-colors flex items-center justify-center gap-2 text-sm shadow-sm"
                 >
-                  <Coins size={16} aria-hidden="true" />
-                  Top Up Koin Demo di Dompet
+                  <Coins size={15} aria-hidden="true" />
+                  Isi Saldo di Dompet Demo
                 </Link>
               )}
 
               <button
                 onClick={() => navigate(`/comic/${id}`)}
-                className="w-full py-2.5 border border-gray-300 text-gray-700 hover:bg-gray-100 font-semibold rounded-full text-sm transition-colors"
+                className="w-full py-2.5 border border-primary/30 text-primary hover:bg-primary/5 font-semibold rounded-md text-xs transition-colors cursor-pointer"
               >
                 Kembali ke Info Komik
               </button>
@@ -340,14 +338,14 @@ export const ReadingMode: React.FC = () => {
         </main>
       ) : loadError ? (
         <main className="flex-1 w-full flex flex-col items-center justify-center p-6">
-          <div className="max-w-xl w-full bg-surface rounded-2xl p-8 flex flex-col items-center gap-4 text-center">
-            <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center">
+          <div className="max-w-xl w-full bg-surface rounded-xl border border-primary/15 p-8 flex flex-col items-center gap-4 text-center">
+            <div className="w-14 h-14 rounded-xl bg-red-100 flex items-center justify-center">
               <AlertCircle size={28} className="text-red-600" aria-hidden="true" />
             </div>
             <h1 className="text-xl font-bold font-heading text-primary">{t('detail.notFound')}</h1>
             <button
               onClick={() => navigate(`/comic/${id}`)}
-              className="mt-2 px-6 py-3 bg-primary text-white font-bold rounded-full hover:bg-primary-hover transition-colors"
+              className="mt-2 px-6 py-2.5 bg-primary text-white font-semibold rounded-md hover:bg-primary-hover transition-colors cursor-pointer text-sm"
             >
               {t('read.backToDetail')}
             </button>
@@ -356,17 +354,17 @@ export const ReadingMode: React.FC = () => {
       ) : !isCreator ? (
         /* Katalog Kitsu — tidak menyediakan halaman komik (jujur) */
         <main className="flex-1 w-full flex flex-col items-center justify-center p-6">
-          <div className="max-w-xl w-full bg-primary rounded-2xl border border-white/10 p-8 flex flex-col items-center gap-4 text-center">
-            <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center">
+          <div className="max-w-xl w-full bg-primary rounded-xl border border-white/10 p-8 flex flex-col items-center gap-4 text-center">
+            <div className="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center">
               <BookOpen size={28} className="text-white" aria-hidden="true" />
             </div>
-            <h1 className="text-xl font-bold font-heading">{t('read.notAvailableTitle')}</h1>
+            <h1 className="text-xl font-bold font-heading text-white">{t('read.notAvailableTitle')}</h1>
             <p className="text-gray-300 text-sm leading-relaxed">{t('read.notAvailableDesc')}</p>
             <button
               onClick={() => navigate(`/comic/${id}`)}
-              className="mt-2 px-6 py-3 bg-surface text-primary font-bold rounded-full hover:bg-white transition-colors flex items-center gap-2"
+              className="mt-2 px-6 py-2.5 bg-surface text-primary font-semibold rounded-md hover:bg-white transition-colors flex items-center gap-2 cursor-pointer text-sm"
             >
-              <AlertCircle size={18} aria-hidden="true" />
+              <AlertCircle size={16} aria-hidden="true" />
               {t('read.backToDetail')}
             </button>
           </div>
@@ -377,7 +375,7 @@ export const ReadingMode: React.FC = () => {
           {pages.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-10 gap-3 text-center">
               <BookOpen size={28} className={night ? 'text-gray-300' : 'text-primary'} aria-hidden="true" />
-              <h2 className={`text-lg font-bold ${night ? 'text-gray-100' : 'text-primary'}`}>{t('read.noPages')}</h2>
+              <h2 className={`text-lg font-bold font-heading ${night ? 'text-gray-100' : 'text-primary'}`}>{t('read.noPages')}</h2>
               <p className={`text-sm ${night ? 'text-gray-400' : 'text-gray-600'}`}>{t('read.noPagesDesc')}</p>
             </div>
           ) : (
@@ -402,22 +400,22 @@ export const ReadingMode: React.FC = () => {
             {prevChapter ? (
               <button
                 onClick={() => { setLoading(true); navigate(`/read/${id}/${prevChapter.number}`); }}
-                className="flex items-center gap-2 px-5 py-3 rounded-full font-bold border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-md font-semibold border border-primary/30 text-primary hover:bg-primary/5 transition-colors cursor-pointer text-sm"
               >
-                <ChevronLeft size={18} aria-hidden="true" /> {t('read.prevChapter')}
+                <ChevronLeft size={16} aria-hidden="true" /> {t('read.prevChapter')}
               </button>
             ) : (
               <span />
             )}
-            <span className={`text-sm font-semibold ${night ? 'text-gray-300' : 'text-gray-500'}`}>
+            <span className={`text-sm font-medium ${night ? 'text-gray-300' : 'text-gray-500'}`}>
               {chapterIndex >= 0 ? `${chapterIndex + 1} / ${chapters.length}` : ''}
             </span>
             {nextChapter ? (
               <button
                 onClick={() => { setLoading(true); navigate(`/read/${id}/${nextChapter.number}`); }}
-                className="flex items-center gap-2 px-5 py-3 rounded-full font-bold border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-md font-semibold bg-primary text-white hover:bg-primary-hover transition-colors cursor-pointer text-sm"
               >
-                {t('read.nextChapter')} <ChevronRight size={18} aria-hidden="true" />
+                {t('read.nextChapter')} <ChevronRight size={16} aria-hidden="true" />
               </button>
             ) : (
               <span />
