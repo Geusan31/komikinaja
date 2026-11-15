@@ -51,7 +51,7 @@ export const Login: React.FC = () => {
           <h1 className="text-4xl font-bold text-primary mb-4 font-heading whitespace-pre-line">
             {t('login.title')}
           </h1>
-          <p className="text-gray-800 mb-8 font-medium">
+          <p className="text-ink-muted mb-8 font-medium">
             {t('login.subtitle')}
           </p>
 

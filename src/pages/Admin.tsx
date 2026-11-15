@@ -67,7 +67,7 @@ export const Admin: React.FC = () => {
         </header>
 
         {actionError && (
-          <p role="alert" className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+          <p role="alert" className="text-red-500 text-sm bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 font-medium">
             {actionError}
           </p>
         )}
@@ -110,10 +110,10 @@ export const Admin: React.FC = () => {
                         onClick={() => handleBan(u)}
                         disabled={busyId === u.id || isSelf}
                         title={isSelf ? t('admin.cannotBanSelf') : undefined}
-                        className={`shrink-0 px-4 py-2 rounded-full text-sm font-bold border-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 ${
+                        className={`shrink-0 px-4 py-2 min-h-11 rounded-lg text-sm font-bold border transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer ${
                           u.isBanned
-                            ? 'bg-green-50 text-green-700 border-green-300 hover:bg-green-100'
-                            : 'bg-red-50 text-red-600 border-red-300 hover:bg-red-100'
+                            ? 'bg-emerald-500/15 text-emerald-600 border-emerald-500/40 hover:bg-emerald-500/25'
+                            : 'bg-red-500/15 text-red-500 border-red-500/40 hover:bg-red-500/25'
                         }`}
                       >
                         {u.isBanned ? <ShieldCheck size={15} aria-hidden="true" /> : <ShieldBan size={15} aria-hidden="true" />}
@@ -155,10 +155,10 @@ export const Admin: React.FC = () => {
                         type="button"
                         onClick={() => handleHide(c)}
                         disabled={busyId === c.id}
-                        className={`mt-1 self-start px-4 py-1.5 rounded-full text-sm font-bold border-2 transition-colors disabled:opacity-50 flex items-center gap-1.5 ${
+                        className={`mt-1 self-start px-4 py-2 min-h-11 rounded-lg text-sm font-bold border transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer ${
                           c.hidden
-                            ? 'bg-green-50 text-green-700 border-green-300 hover:bg-green-100'
-                            : 'bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100'
+                            ? 'bg-emerald-500/15 text-emerald-600 border-emerald-500/40 hover:bg-emerald-500/25'
+                            : 'bg-amber-500/15 text-amber-600 border-amber-500/40 hover:bg-amber-500/25'
                         }`}
                       >
                         {c.hidden ? <Eye size={15} aria-hidden="true" /> : <EyeOff size={15} aria-hidden="true" />}

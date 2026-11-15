@@ -37,22 +37,22 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     if (this.state.hasError) {
       return (
         <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 p-8 text-center">
-          <h2 className="text-2xl font-bold font-heading text-primary">
+          <h2 className="text-2xl font-bold font-heading text-ink">
             Terjadi kesalahan pada {this.props.sectionName ?? 'halaman ini'}
           </h2>
-          <p className="text-gray-600 max-w-md">
+          <p className="text-ink-muted max-w-md">
             Data gagal dimuat. Coba lagi, atau kembali ke beranda.
           </p>
           <div className="flex gap-3">
             <button
               onClick={this.handleReset}
-              className="px-6 py-3 bg-primary text-white font-bold rounded-full hover:bg-primary-hover transition-colors"
+              className="px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary-hover transition-colors cursor-pointer"
             >
               Coba Lagi
             </button>
             <button
               onClick={() => { window.location.href = '/'; }}
-              className="px-6 py-3 border-2 border-primary text-primary font-bold rounded-full hover:bg-primary hover:text-white transition-colors"
+              className="px-6 py-3 border-2 border-ink/30 text-ink font-bold rounded-lg hover:bg-primary hover:text-white hover:border-primary transition-colors cursor-pointer"
             >
               Ke Beranda
             </button>

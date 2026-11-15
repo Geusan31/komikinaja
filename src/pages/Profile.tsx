@@ -3,6 +3,8 @@ import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme, type DarkIntensity, type ThemeMode } from '../context/ThemeContext';
+import { Button } from '../components/Button';
 import { listFavorites, type FavoriteEntry } from '../services/favorites';
 import { listMyComics, type CreatorComic } from '../services/creatorComics';
 import { getAuthorStats, type WorkStat } from '../services/analytics';
@@ -17,6 +19,7 @@ import type { CreatorEarningsSummary } from '../types/monetization';
 export const Profile: React.FC = () => {
   const { user, logout, setRole, updateProfile } = useAuth();
   const { language, toggleLanguage, t } = useLanguage();
+  const { mode, darkIntensity, setMode, setDarkIntensity } = useTheme();
   const navigate = useNavigate();
   const isAuthor = user?.role === 'author';
   const isAdmin = user?.isAdmin ?? false;
@@ -142,32 +145,32 @@ export const Profile: React.FC = () => {
       <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
 
         {/* Profile Header */}
-        <div className="flex flex-col md:flex-row gap-6 items-center md:items-start pb-8 border-b-2 border-gray-300">
+        <div className="flex flex-col md:flex-row gap-6 items-center md:items-start pb-8 border-b border-[var(--color-line)]">
           <div className="relative">
-            <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-primary">
+            <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-ink/25">
               <img src={user?.avatar} alt={user?.name || 'Profile'} className="w-full h-full object-cover" />
             </div>
           </div>
 
           <div className="flex flex-col text-center md:text-left gap-2 pt-2">
-            <h1 className="text-2xl font-bold font-heading text-primary">{user?.name}</h1>
-            <p className="text-gray-500 font-medium">@{user?.email.split('@')[0]}</p>
-            <p className="text-sm text-gray-600 max-w-xl mt-2 leading-relaxed">
+            <h1 className="text-2xl font-bold font-heading text-ink">{user?.name}</h1>
+            <p className="text-ink-muted font-medium">@{user?.email.split('@')[0]}</p>
+            <p className="text-sm text-ink-muted max-w-xl mt-2 leading-relaxed">
               {t('profile.defaultBio')}
             </p>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center justify-between border-b-2 border-gray-300">
-          <div className="flex gap-8">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-line)]">
+          <div className="flex gap-6 sm:gap-8 overflow-x-auto hide-scrollbar">
             <button
               onClick={showMainTab}
               aria-pressed={activeTab !== 'AKUN' && activeTab !== 'ANALITIK'}
-              className={`pb-4 font-bold text-sm tracking-widest uppercase transition-colors ${
+              className={`pb-4 font-bold text-sm tracking-widest uppercase transition-colors whitespace-nowrap ${
                 activeTab !== 'AKUN' && activeTab !== 'ANALITIK'
-                  ? 'text-primary border-b-4 border-primary'
-                  : 'text-gray-500 hover:text-gray-800'
+                  ? 'text-ink border-b-4 border-primary'
+                  : 'text-ink-muted hover:text-ink'
               }`}
             >
               {isAuthor ? t('profile.comic') : t('profile.favorite')}
@@ -176,10 +179,10 @@ export const Profile: React.FC = () => {
               <button
                 onClick={() => { setStatsLoading(true); setActiveTab('ANALITIK'); }}
                 aria-pressed={activeTab === 'ANALITIK'}
-                className={`pb-4 font-bold text-sm tracking-widest uppercase transition-colors flex items-center gap-1.5 ${
+                className={`pb-4 font-bold text-sm tracking-widest uppercase transition-colors flex items-center gap-1.5 whitespace-nowrap ${
                   activeTab === 'ANALITIK'
-                    ? 'text-primary border-b-4 border-primary'
-                    : 'text-gray-500 hover:text-gray-800'
+                    ? 'text-ink border-b-4 border-primary'
+                    : 'text-ink-muted hover:text-ink'
                 }`}
               >
                 <BarChart3 size={15} aria-hidden="true" />
@@ -189,8 +192,8 @@ export const Profile: React.FC = () => {
             <button
               onClick={() => setActiveTab('AKUN')}
               aria-pressed={activeTab === 'AKUN'}
-              className={`pb-4 font-bold text-sm tracking-widest uppercase transition-colors ${
-                activeTab === 'AKUN' ? 'text-primary border-b-4 border-primary' : 'text-gray-500 hover:text-gray-800'
+              className={`pb-4 font-bold text-sm tracking-widest uppercase transition-colors whitespace-nowrap ${
+                activeTab === 'AKUN' ? 'text-ink border-b-4 border-primary' : 'text-ink-muted hover:text-ink'
               }`}
             >
               {t('profile.account')}
@@ -198,8 +201,8 @@ export const Profile: React.FC = () => {
             <button
               onClick={() => { setCommunityLoading(true); setActiveTab('KOMUNITAS'); }}
               aria-pressed={activeTab === 'KOMUNITAS'}
-              className={`pb-4 font-bold text-sm tracking-widest uppercase transition-colors flex items-center gap-1.5 ${
-                activeTab === 'KOMUNITAS' ? 'text-primary border-b-4 border-primary' : 'text-gray-500 hover:text-gray-800'
+              className={`pb-4 font-bold text-sm tracking-widest uppercase transition-colors flex items-center gap-1.5 whitespace-nowrap ${
+                activeTab === 'KOMUNITAS' ? 'text-ink border-b-4 border-primary' : 'text-ink-muted hover:text-ink'
               }`}
             >
               <MessageSquare size={15} aria-hidden="true" />
@@ -219,7 +222,7 @@ export const Profile: React.FC = () => {
             {isAdmin && (
               <Link
                 to="/admin"
-                className="px-3.5 py-2 border border-red-500 text-red-600 rounded-md text-xs font-semibold hover:bg-red-50 transition-colors flex items-center gap-1.5"
+                className="px-3.5 py-2 border border-red-500 text-red-500 rounded-lg text-xs font-semibold hover:bg-red-500/10 transition-colors flex items-center gap-1.5"
               >
                 <ShieldCheck size={14} aria-hidden="true" />
                 {t('profile.adminDashboard')}
@@ -335,7 +338,7 @@ export const Profile: React.FC = () => {
                     </button>
                     <button
                       onClick={() => { setEditingName(false); setNewName(user?.name ?? ''); setNameError(''); }}
-                      className="p-1 text-gray-500 hover:text-gray-700"
+                      className="p-1 text-ink-muted hover:text-ink cursor-pointer"
                       aria-label={t('common.back')}
                     >
                       <X size={18} aria-hidden="true" />
@@ -344,38 +347,92 @@ export const Profile: React.FC = () => {
                 ) : (
                   <>
                     <span>{user?.name}</span>
-                    <button
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
                       onClick={() => { setNewName(user?.name ?? ''); setEditingName(true); }}
-                      className="px-4 py-1 border border-gray-400 rounded-full hover:bg-gray-200"
                     >
                       {t('profile.edit')}
-                    </button>
+                    </Button>
                   </>
                 )}
               </div>
               {nameError && <p role="alert" className="text-red-500 text-xs w-full mt-1">{nameError}</p>}
             </AccountSection>
 
+            <AccountSection title={t('profile.appearance')}>
+              <div className="flex flex-col gap-5 w-full">
+                <div className="flex flex-col gap-2.5">
+                  <div className="flex flex-col">
+                    <span className="font-bold text-ink">{t('profile.themeMode')}</span>
+                    <span className="text-xs text-ink-muted">{t('theme.autoDesc')}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2" role="group" aria-label={t('profile.themeMode')}>
+                    {([
+                      { key: 'auto' as ThemeMode, label: t('theme.auto') },
+                      { key: 'light' as ThemeMode, label: t('theme.light') },
+                      { key: 'dark' as ThemeMode, label: t('theme.dark') },
+                    ]).map((opt) => (
+                      <Button
+                        key={opt.key}
+                        type="button"
+                        variant={mode === opt.key ? 'chipActive' : 'chip'}
+                        size="sm"
+                        pill
+                        onClick={() => setMode(opt.key)}
+                        aria-pressed={mode === opt.key}
+                      >
+                        {opt.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2.5 pt-4 border-t border-[var(--color-line)]">
+                  <span className="font-bold text-ink">{t('profile.darkIntensity')}</span>
+                  <div className="flex flex-wrap gap-2" role="group" aria-label={t('profile.darkIntensity')}>
+                    {([
+                      { key: 'gray' as DarkIntensity, label: t('theme.darkGray') },
+                      { key: 'amoled' as DarkIntensity, label: t('theme.amoled') },
+                    ]).map((opt) => (
+                      <Button
+                        key={opt.key}
+                        type="button"
+                        variant={darkIntensity === opt.key ? 'chipActive' : 'chip'}
+                        size="sm"
+                        pill
+                        onClick={() => setDarkIntensity(opt.key)}
+                        aria-pressed={darkIntensity === opt.key}
+                      >
+                        {opt.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </AccountSection>
+
             <AccountSection title={t('profile.settings')}>
               <div className="flex flex-col gap-4 w-full">
-                <div className="flex justify-between items-center border-b border-gray-300 pb-4">
+                <div className="flex justify-between items-center border-b border-[var(--color-line)] pb-4">
                   <div className="flex flex-col">
-                    <span className="font-bold text-primary">Email</span>
-                    <span className="text-sm text-gray-600">{user?.email}</span>
+                    <span className="font-bold text-ink">Email</span>
+                    <span className="text-sm text-ink-muted">{user?.email}</span>
                   </div>
                   <button
                     disabled
                     title={t('common.soon')}
-                    className="px-4 py-1 border border-gray-400 rounded-full opacity-50 cursor-not-allowed text-sm font-bold"
+                    className="px-4 py-2 min-h-11 border border-[var(--color-line)] rounded-lg opacity-50 cursor-not-allowed text-sm font-bold text-ink-muted"
                   >
                     {t('profile.changeEmail')}
                   </button>
                 </div>
 
-                <div className="flex justify-between items-center border-b border-gray-300 pb-4">
-                  <span className="font-medium text-gray-600">{t('profile.notif')}</span>
+                <div className="flex justify-between items-center border-b border-[var(--color-line)] pb-4">
+                  <span className="font-medium text-ink-muted">{t('profile.notif')}</span>
                   <span
-                    className="w-12 h-6 bg-gray-300 rounded-full relative opacity-50"
+                    className="w-12 h-6 bg-gray-400/50 rounded-full relative opacity-50"
                     aria-disabled="true"
                     title={t('common.soon')}
                   >
@@ -383,10 +440,10 @@ export const Profile: React.FC = () => {
                   </span>
                 </div>
 
-                <div className="flex justify-between items-center border-b border-gray-300 pb-4">
-                  <span className="font-medium text-gray-600">{t('profile.bestComment')}</span>
+                <div className="flex justify-between items-center border-b border-[var(--color-line)] pb-4">
+                  <span className="font-medium text-ink-muted">{t('profile.bestComment')}</span>
                   <span
-                    className="w-12 h-6 bg-gray-300 rounded-full relative opacity-50"
+                    className="w-12 h-6 bg-gray-400/50 rounded-full relative opacity-50"
                     aria-disabled="true"
                     title={t('common.soon')}
                   >
@@ -394,18 +451,20 @@ export const Profile: React.FC = () => {
                   </span>
                 </div>
 
-                <div className="flex justify-between items-center border-b border-gray-300 pb-4">
-                  <span className="font-medium text-gray-600">{t('profile.changeRole')} ({isAuthor ? 'Author → Reader' : 'Reader → Author'})</span>
-                  <button onClick={handleChangeRole} className="px-4 py-1 border border-gray-400 rounded-full hover:bg-gray-200 text-sm font-bold">{t('profile.changeRole')}</button>
+                <div className="flex justify-between items-center border-b border-[var(--color-line)] pb-4 gap-3">
+                  <span className="font-medium text-ink-muted">{t('profile.changeRole')} ({isAuthor ? 'Author → Reader' : 'Reader → Author'})</span>
+                  <Button type="button" variant="outline" size="sm" onClick={handleChangeRole}>
+                    {t('profile.changeRole')}
+                  </Button>
                 </div>
 
                 <button
                   type="button"
-                  className="flex justify-between items-center pt-2 cursor-pointer group w-full text-left"
+                  className="flex justify-between items-center pt-2 min-h-11 cursor-pointer group w-full text-left"
                   onClick={toggleLanguage}
                 >
-                  <span className="font-medium text-gray-600">{t('profile.chooseLanguage')}</span>
-                  <span className="font-bold text-primary text-sm group-hover:underline">{language === 'id' ? 'Bahasa Indonesia' : 'English'} &gt;</span>
+                  <span className="font-medium text-ink-muted">{t('profile.chooseLanguage')}</span>
+                  <span className="font-bold text-ink text-sm group-hover:underline">{language === 'id' ? 'Bahasa Indonesia' : 'English'} &gt;</span>
                 </button>
               </div>
             </AccountSection>
@@ -585,7 +644,7 @@ export const Profile: React.FC = () => {
               <p className="text-sm text-gray-600 max-w-sm">{t('profile.comicsEmptyDesc')}</p>
               <Link
                 to="/add-comic"
-                className="mt-2 px-5 py-2 bg-primary text-white font-bold rounded-full hover:bg-primary-hover transition-colors"
+                className="mt-2 px-5 py-2.5 min-h-11 inline-flex items-center justify-center bg-primary text-white font-bold rounded-lg hover:bg-primary-hover transition-colors"
               >
                 {t('profile.addComic')}
               </Link>
@@ -595,7 +654,7 @@ export const Profile: React.FC = () => {
               {myComics.map((c) => (
                 <div key={c.id} className="flex flex-col gap-2">
                   <Link to={`/comic/${c.id}`} className="group">
-                    <div className="aspect-3/4 w-full rounded-md overflow-hidden bg-gray-200 shadow-sm transition-transform duration-300 group-hover:scale-105">
+                    <div className="aspect-3/4 w-full rounded-md overflow-hidden bg-surface shadow-sm transition-transform duration-300 group-hover:scale-105">
                       <img
                         src={c.coverUrl || 'https://placehold.co/400x600'}
                         alt={c.title}
@@ -603,12 +662,12 @@ export const Profile: React.FC = () => {
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <h3 className="font-bold text-primary text-sm leading-tight truncate mt-2">{c.title}</h3>
+                    <h3 className="font-bold text-ink text-sm leading-tight truncate mt-2">{c.title}</h3>
                   </Link>
                   <div className="flex items-center gap-2">
                     <Link
                       to={`/add-comic?comic=${c.id}`}
-                      className="flex items-center gap-1 text-xs font-bold text-primary border border-primary/40 rounded-full px-2.5 py-1 hover:bg-primary hover:text-white transition-colors"
+                      className="flex items-center gap-1 text-xs font-bold text-ink border border-[var(--color-line)] rounded-lg px-3 py-1.5 hover:bg-primary hover:text-white hover:border-primary transition-colors"
                     >
                       <Settings2 size={13} aria-hidden="true" /> {t('profile.manage')}
                     </Link>

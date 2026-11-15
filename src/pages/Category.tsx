@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from '../components/Navbar';
 import { ComicCard, ComicSkeleton } from '../components/ComicCard';
+import { Button } from '../components/Button';
 import { categories } from '../data/dummy';
 import { Search, AlertCircle } from 'lucide-react';
 import { fetchManga } from '../services/api';
@@ -111,20 +112,22 @@ export const Category: React.FC = () => {
       <Navbar />
 
       {/* Category Navigation */}
-      <div className="w-full border-b-2 border-primary/10 bg-background sticky top-18 z-40">
+      <div className="w-full border-b border-[var(--color-line)] bg-background sticky top-18 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-8 overflow-x-auto py-4 hide-scrollbar">
+          <div className="flex items-center gap-2.5 overflow-x-auto py-3.5 hide-scrollbar" role="group" aria-label={t('nav.category')}>
             {categories.map((cat) => (
-              <button
+              <Button
                 key={cat}
+                type="button"
+                variant={activeCategory === cat ? 'chipActive' : 'chip'}
+                size="sm"
+                pill
                 onClick={() => handleCategoryChange(cat)}
                 aria-pressed={activeCategory === cat}
-                className={`font-bold whitespace-nowrap transition-colors ${
-                  activeCategory === cat ? 'text-primary' : 'text-gray-500 hover:text-primary'
-                }`}
+                className="whitespace-nowrap shrink-0"
               >
                 {cat}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -134,33 +137,34 @@ export const Category: React.FC = () => {
 
         {/* Search Bar */}
         <form onSubmit={handleSearch} className="w-full relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} aria-hidden="true" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-muted" size={20} aria-hidden="true" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t('home.searchPlaceholder')}
             aria-label={t('home.searchPlaceholder')}
-            className="w-full pl-12 pr-4 py-4 rounded-xl border-2 border-gray-200 bg-transparent focus:border-primary focus:ring-0 outline-none transition-colors"
+            className="w-full pl-12 pr-4 py-3.5 min-h-12 rounded-xl border border-[var(--color-line)] bg-surface text-ink placeholder:text-ink-muted focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-colors"
           />
         </form>
 
         {/* Filters & Stats */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-left">
-          <h2 className="font-bold text-primary">{t('category.count', { count: mangas.length })}</h2>
+          <h2 className="font-bold text-ink">{t('category.count', { count: mangas.length })}</h2>
 
-          <div className="flex items-center gap-4 text-sm font-medium">
+          <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Sort">
             {sortOptions.map((opt) => (
-              <button
+              <Button
                 key={opt.key}
+                type="button"
+                variant={activeSort === opt.key ? 'chipActive' : 'chip'}
+                size="sm"
+                pill
                 onClick={() => handleSortChange(opt.key)}
                 aria-pressed={activeSort === opt.key}
-                className={`transition-colors ${
-                  activeSort === opt.key ? 'text-primary' : 'text-gray-500 hover:text-primary'
-                } ${opt.key !== sortOptions[0].key ? 'border-l-2 border-gray-300 pl-4' : ''}`}
               >
                 {t(opt.i18nKey)}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -172,21 +176,18 @@ export const Category: React.FC = () => {
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-12 gap-4 text-center">
-            <div className="flex items-center gap-2 text-red-600 font-semibold">
+            <div className="flex items-center gap-2 text-red-500 font-semibold">
               <AlertCircle size={24} aria-hidden="true" />
               {t('common.loadError')}
             </div>
-            <button
-              onClick={handleRetry}
-              className="px-6 py-3 border-2 border-primary text-primary font-bold rounded-full hover:bg-primary hover:text-white transition-colors"
-            >
+            <Button type="button" variant="outline" onClick={handleRetry}>
               {t('common.retry')}
-            </button>
+            </Button>
           </div>
         ) : mangas.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 gap-2 text-center">
             <img src={emptyIllustration} alt="" className="w-80 h-80 object-contain drop-shadow-lg mb-10" />
-            <h3 className="text-2xl font-bold text-gray-500 -mt-5">
+            <h3 className="text-2xl font-bold text-ink-muted -mt-5">
               {t('category.notFound', { query: urlQuery || "Manga" })}
             </h3>
           </div>
@@ -209,12 +210,9 @@ export const Category: React.FC = () => {
 
         {hasNextPage && !loading && !error && (
           <div className="flex justify-center mb-8">
-            <button
-              onClick={handleLoadMore}
-              className="px-6 py-3 border-2 border-primary text-primary font-bold rounded-full hover:bg-primary hover:text-white transition-colors"
-            >
+            <Button type="button" variant="outline" onClick={handleLoadMore}>
               {t('home.viewMore')}
-            </button>
+            </Button>
           </div>
         )}
       </main>

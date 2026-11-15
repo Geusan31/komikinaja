@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { ComicCard, ComicSkeleton } from '../components/ComicCard';
+import { Button } from '../components/Button';
 import { fetchTopManga } from '../services/api';
 import { Link } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
@@ -39,8 +40,8 @@ export const Trending: React.FC = () => {
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
         <div className="flex flex-col gap-2 text-left">
-          <h1 className="text-3xl font-bold font-heading text-primary">{t('trending.title')}</h1>
-          <p className="text-gray-600">{t('trending.subtitle')}</p>
+          <h1 className="text-3xl font-bold font-heading text-ink">{t('trending.title')}</h1>
+          <p className="text-ink-muted">{t('trending.subtitle')}</p>
         </div>
 
         {loading ? (
@@ -49,16 +50,13 @@ export const Trending: React.FC = () => {
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-12 gap-4 text-center">
-            <div className="flex items-center gap-2 text-red-600 font-semibold">
+            <div className="flex items-center gap-2 text-red-500 font-semibold">
               <AlertCircle size={24} aria-hidden="true" />
               {t('common.loadError')}
             </div>
-            <button
-              onClick={handleRetry}
-              className="px-6 py-3 border-2 border-primary text-primary font-bold rounded-full hover:bg-primary hover:text-white transition-colors"
-            >
+            <Button type="button" variant="outline" onClick={handleRetry}>
               {t('common.retry')}
-            </button>
+            </Button>
           </div>
         ) : trendingMangas.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 gap-2 text-center">

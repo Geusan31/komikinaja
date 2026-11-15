@@ -311,6 +311,42 @@ export const translations: Translations = {
     'addComic.isPremium': 'Chapter Premium (Berbayar Koin)',
     'addComic.priceCoins': 'Harga Koin',
     'addComic.priceCoinsHelp': 'Tentukan jumlah koin yang dibutuhkan pembaca untuk membuka chapter ini (contoh: 10 koin).',
+
+    // UX Redesign — Theme, Continue Reading, Status Chapter & Reader Bottom Sheet
+    'theme.mode': 'Mode Tampilan',
+    'theme.auto': 'Otomatis (Waktu Lokal)',
+    'theme.autoDesc': 'Aktif gelap otomatis pukul 18:00–05:59',
+    'theme.light': 'Terang',
+    'theme.dark': 'Gelap',
+    'theme.intensity': 'Intensitas Gelap',
+    'theme.darkGray': 'Dark Gray',
+    'theme.amoled': 'AMOLED Black',
+    'theme.toggleLabel': 'Ubah tema tampilan (saat ini: {mode})',
+
+    'home.continueBadge': 'Lanjutkan Bacaan Terakhir',
+    'home.resumeChapter': 'Lanjutkan Chapter {chapter}',
+    'home.resumeComicDesc': 'Lanjutkan bacaan terakhirmu dari Chapter {chapter}.',
+    'home.resumeComicDescNamed': 'Terakhir membaca Chapter {chapter} — {title}.',
+    'home.resumeViewDesc': 'Komik yang terakhir kamu lihat di KomikinAja.',
+    'home.viewDetail': 'Detail Komik',
+    'home.chapterShort': 'Ch. {chapter}',
+
+    'detail.continueChapter': 'Lanjutkan Chapter {chapter}',
+    'detail.readStatus': 'Sudah Dibaca',
+    'detail.lastReadBadge': 'Terakhir Dibaca',
+
+    'read.settings': 'Pengaturan Baca',
+    'read.closeSettings': 'Tutup pengaturan',
+    'read.zoomLabel': 'Ukuran Halaman',
+    'read.dimHint': 'Kontrol melayang otomatis meredup setelah 3 detik di mode gelap.',
+    'read.themeSection': 'Mode Tema',
+    'read.surfaceSection': 'Latar Mode Gelap',
+    'read.prevShort': 'Ch. {chapter}',
+    'read.nextShort': 'Ch. {chapter}',
+
+    'profile.appearance': 'Tampilan & Mode Gelap',
+    'profile.themeMode': 'Tema Aplikasi',
+    'profile.darkIntensity': 'Warna Gelap',
   },
   en: {
     'nav.recommendation': 'Recommendations',
@@ -604,6 +640,42 @@ export const translations: Translations = {
     'addComic.isPremium': 'Premium Chapter (Paid with Coins)',
     'addComic.priceCoins': 'Coin Price',
     'addComic.priceCoinsHelp': 'Set the number of coins readers need to unlock this chapter (e.g., 10 coins).',
+
+    // UX Redesign — Theme, Continue Reading, Chapter Status & Reader Bottom Sheet
+    'theme.mode': 'Display Theme',
+    'theme.auto': 'Auto (Local Time)',
+    'theme.autoDesc': 'Automatically switches to dark mode 18:00–05:59',
+    'theme.light': 'Light',
+    'theme.dark': 'Dark',
+    'theme.intensity': 'Dark Intensity',
+    'theme.darkGray': 'Dark Gray',
+    'theme.amoled': 'AMOLED Black',
+    'theme.toggleLabel': 'Switch display theme (current: {mode})',
+
+    'home.continueBadge': 'Continue Last Read',
+    'home.resumeChapter': 'Resume Chapter {chapter}',
+    'home.resumeComicDesc': 'Pick up where you left off at Chapter {chapter}.',
+    'home.resumeComicDescNamed': 'Last read Chapter {chapter} — {title}.',
+    'home.resumeViewDesc': 'Most recently viewed comic on KomikinAja.',
+    'home.viewDetail': 'Comic Details',
+    'home.chapterShort': 'Ch. {chapter}',
+
+    'detail.continueChapter': 'Continue Chapter {chapter}',
+    'detail.readStatus': 'Read',
+    'detail.lastReadBadge': 'Last Read',
+
+    'read.settings': 'Reading Settings',
+    'read.closeSettings': 'Close settings',
+    'read.zoomLabel': 'Page Zoom',
+    'read.dimHint': 'Floating controls auto-dim after 3 seconds in dark mode.',
+    'read.themeSection': 'Theme Mode',
+    'read.surfaceSection': 'Dark Background',
+    'read.prevShort': 'Ch. {chapter}',
+    'read.nextShort': 'Ch. {chapter}',
+
+    'profile.appearance': 'Appearance & Dark Mode',
+    'profile.themeMode': 'App Theme',
+    'profile.darkIntensity': 'Dark Tone',
   },
 };
 

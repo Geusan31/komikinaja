@@ -121,7 +121,7 @@ const TipModal: React.FC<TipModalProps> = ({
                 <Heart size={16} className="text-primary" aria-hidden="true" />
                 {t('tip.modalTitle', { creator: creatorName })}
               </h2>
-              <button onClick={onClose} className="text-gray-400 hover:text-gray-700 cursor-pointer" aria-label="Tutup">
+              <button onClick={onClose} className="text-ink-muted hover:text-ink cursor-pointer min-w-10 min-h-10 flex items-center justify-center rounded-lg" aria-label="Tutup">
                 <X size={18} aria-hidden="true" />
               </button>
             </div>
@@ -477,7 +477,7 @@ export const CreatorProfile: React.FC = () => {
                 aria-pressed={isFollow}
                 className={`flex items-center gap-1.5 px-4 py-2.5 rounded-md font-semibold text-xs border transition-colors disabled:opacity-60 cursor-pointer ${
                   isFollow
-                    ? 'border-primary/30 text-primary hover:bg-red-50 hover:text-red-600 hover:border-red-300'
+                    ? 'border-[var(--color-line)] text-ink hover:bg-red-500/10 hover:text-red-500 hover:border-red-400'
                     : 'bg-primary text-white border-primary hover:bg-primary-hover'
                 }`}
               >

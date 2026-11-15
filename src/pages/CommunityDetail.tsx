@@ -338,7 +338,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onLike, onReport }) => {
         {user && (
           <button
             onClick={() => onReport('post', post.id)}
-            className="p-1.5 text-gray-400 hover:text-red-500 transition-colors rounded-md hover:bg-red-50 cursor-pointer"
+            className="p-1.5 text-ink-muted hover:text-red-500 transition-colors rounded-md hover:bg-red-500/10 cursor-pointer"
             aria-label={t('community.report')}
             title={t('community.report')}
           >
@@ -669,7 +669,7 @@ export const CommunityDetail: React.FC = () => {
                 aria-pressed={community.isMember}
                 className={`w-full md:w-auto px-6 py-2.5 rounded-md font-semibold text-sm transition-colors disabled:opacity-60 cursor-pointer ${
                   community.isMember
-                    ? 'border border-primary/30 text-primary hover:bg-red-50 hover:text-red-600 hover:border-red-300'
+                    ? 'border border-[var(--color-line)] text-ink hover:bg-red-500/10 hover:text-red-500 hover:border-red-400'
                     : 'bg-primary text-white hover:bg-primary-hover'
                 }`}
               >

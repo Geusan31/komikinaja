@@ -30,21 +30,21 @@ const CommentItem: React.FC<{ comment: Comment; now: number; onDelete: (id: stri
       />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-bold text-primary text-sm">{comment.user.name}</span>
-          <span className="text-xs text-gray-500">{time}</span>
+          <span className="font-bold text-ink text-sm">{comment.user.name}</span>
+          <span className="text-xs text-ink-muted">{time}</span>
           {comment.isOwn && (
             <button
               type="button"
               onClick={() => onDelete(comment.id)}
               aria-label={t('comments.delete')}
               title={t('comments.delete')}
-              className="ml-auto text-gray-400 hover:text-red-500 transition-colors"
+              className="ml-auto text-ink-muted hover:text-red-500 transition-colors cursor-pointer"
             >
               <Trash2 size={16} aria-hidden="true" />
             </button>
           )}
         </div>
-        <p className="text-gray-800 text-sm mt-1 whitespace-pre-wrap break-words">{comment.content}</p>
+        <p className="text-ink text-sm mt-1 whitespace-pre-wrap break-words">{comment.content}</p>
       </div>
     </li>
   );
@@ -96,10 +96,10 @@ export const CommentSection: React.FC<{ comicId: string }> = ({ comicId }) => {
 
   return (
     <section className="w-full flex flex-col gap-4 mb-16" aria-labelledby="comments-heading">
-      <h3 id="comments-heading" className="font-bold text-xl text-gray-700 flex items-center gap-2">
-        <MessageCircle size={20} className="text-primary" aria-hidden="true" />
+      <h3 id="comments-heading" className="font-bold text-xl text-ink flex items-center gap-2">
+        <MessageCircle size={20} className="text-ink" aria-hidden="true" />
         {t('comments.title')}
-        <span className="text-sm font-semibold text-gray-500">({comments.length})</span>
+        <span className="text-sm font-semibold text-ink-muted">({comments.length})</span>
       </h3>
 
       {user ? (
@@ -110,19 +110,19 @@ export const CommentSection: React.FC<{ comicId: string }> = ({ comicId }) => {
             placeholder={t('comments.placeholder')}
             maxLength={2000}
             rows={2}
-            className="flex-1 px-4 py-3 bg-surface border border-transparent rounded-md outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-gray-500 text-primary resize-none"
+            className="flex-1 px-4 py-3 bg-surface border border-[var(--color-line)] rounded-lg outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-ink-muted text-ink resize-none"
           />
           <button
             type="submit"
             disabled={posting || !draft.trim()}
-            className="mt-1 px-4 py-3 bg-primary text-white rounded-md font-semibold hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="mt-1 px-4 py-3 min-h-11 bg-primary text-white rounded-lg font-semibold hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
           >
             <Send size={16} aria-hidden="true" />
             {t('comments.post')}
           </button>
         </form>
       ) : (
-        <p className="text-sm text-gray-500 bg-surface rounded-md px-4 py-3">{t('comments.loginToComment')}</p>
+        <p className="text-sm text-ink-muted bg-surface rounded-lg px-4 py-3">{t('comments.loginToComment')}</p>
       )}
       {postError && <p role="alert" className="text-red-500 text-sm">{postError}</p>}
 

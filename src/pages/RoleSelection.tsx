@@ -26,18 +26,18 @@ export const RoleSelection: React.FC = () => {
           navigate('/login');
         }}
         aria-label={t('common.back')}
-        className="absolute top-6 left-6 text-primary hover:bg-primary/10 p-2 rounded-full transition-colors z-50 cursor-pointer"
+        className="absolute top-6 left-6 text-ink hover:bg-ink/10 p-2.5 min-w-11 min-h-11 flex items-center justify-center rounded-lg transition-colors z-50 cursor-pointer"
       >
-        <ChevronLeft size={32} />
+        <ChevronLeft size={28} />
       </button>
-      <Link to="/" className="text-5xl font-bold font-heading text-primary mb-8">
+      <Link to="/" className="text-5xl font-bold font-heading text-ink mb-8">
         K
       </Link>
 
-      <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4 font-heading">
+      <h1 className="text-4xl md:text-5xl font-bold text-ink mb-4 font-heading">
         {t('role.title')}
       </h1>
-      <p className="text-gray-800 mb-12 font-medium">
+      <p className="text-ink-muted mb-12 font-medium">
         {t('role.subtitle')}
       </p>
 
@@ -47,14 +47,14 @@ export const RoleSelection: React.FC = () => {
           type="button"
           onClick={() => setSelectedRole('reader')}
           aria-pressed={selectedRole === 'reader'}
-          className={`w-full p-8 rounded-2xl text-left cursor-pointer transition-all duration-300 ${
+          className={`w-full p-8 rounded-2xl text-left cursor-pointer transition-all duration-300 border ${
             selectedRole === 'reader'
-              ? 'bg-primary text-white ring-4 ring-primary/30 scale-[1.02]'
-              : 'bg-surface text-primary hover:bg-[#DED7C6]'
+              ? 'bg-primary text-white border-primary ring-4 ring-primary/30 scale-[1.02]'
+              : 'bg-surface text-ink border-[var(--color-line)] hover:border-ink/40'
           }`}
         >
           <h2 className="text-3xl font-bold font-heading mb-2">{t('role.readerTitle')}</h2>
-          <p className={`font-medium ${selectedRole === 'reader' ? 'text-gray-300' : 'text-gray-700'}`}>
+          <p className={`font-medium ${selectedRole === 'reader' ? 'text-white/80' : 'text-ink-muted'}`}>
             {t('role.readerDesc')}
           </p>
         </button>
@@ -64,14 +64,14 @@ export const RoleSelection: React.FC = () => {
           type="button"
           onClick={() => setSelectedRole('author')}
           aria-pressed={selectedRole === 'author'}
-          className={`w-full p-8 rounded-2xl text-left cursor-pointer transition-all duration-300 ${
+          className={`w-full p-8 rounded-2xl text-left cursor-pointer transition-all duration-300 border ${
             selectedRole === 'author'
-              ? 'bg-primary text-white ring-4 ring-primary/30 scale-[1.02]'
-              : 'bg-surface text-primary hover:bg-[#DED7C6]'
+              ? 'bg-primary text-white border-primary ring-4 ring-primary/30 scale-[1.02]'
+              : 'bg-surface text-ink border-[var(--color-line)] hover:border-ink/40'
           }`}
         >
           <h2 className="text-3xl font-bold font-heading mb-2">{t('role.authorTitle')}</h2>
-          <p className={`font-medium ${selectedRole === 'author' ? 'text-gray-300' : 'text-gray-700'}`}>
+          <p className={`font-medium ${selectedRole === 'author' ? 'text-white/80' : 'text-ink-muted'}`}>
             {t('role.authorDesc')}
           </p>
         </button>

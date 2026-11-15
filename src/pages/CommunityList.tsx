@@ -103,7 +103,7 @@ const CommunityCard: React.FC<CommunityCardProps> = ({ community, onToggle, busy
           aria-pressed={community.isMember}
           className={`w-full py-2.5 px-4 rounded-md font-semibold text-sm transition-colors disabled:opacity-60 cursor-pointer ${
             community.isMember
-              ? 'bg-transparent text-primary border border-primary/30 hover:bg-red-50 hover:text-red-600 hover:border-red-300'
+              ? 'bg-transparent text-ink border border-[var(--color-line)] hover:bg-red-500/10 hover:text-red-500 hover:border-red-400'
               : 'bg-primary text-white hover:bg-primary-hover'
           }`}
         >

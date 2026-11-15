@@ -16,6 +16,8 @@ import {
   Coins,
   X,
   MessageCircle,
+  CheckCircle2,
+  Play,
 } from 'lucide-react';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
@@ -23,7 +25,11 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { isFavorite, addFavorite, removeFavorite } from '../services/favorites';
 import { isFollowing, followAuthor, unfollowAuthor, followerCount } from '../services/followers';
-import { recordView } from '../services/history';
+import {
+  recordView,
+  getComicReadingProgress,
+  type ComicReadingProgress,
+} from '../services/history';
 import { isKitsuId, getCreatorComic, type CreatorComic, type CreatorChapter } from '../services/creatorComics';
 import { getOrCreateCommunity } from '../services/community';
 import {
@@ -98,7 +104,7 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
       <div className="bg-background rounded-xl border border-primary/20 p-6 w-full max-w-sm shadow-xl flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <h2 className="font-heading font-bold text-primary text-base">{t('detail.unlockConfirmTitle')}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 cursor-pointer" aria-label="Tutup">
+          <button onClick={onClose} className="text-ink-muted hover:text-ink cursor-pointer min-w-10 min-h-10 flex items-center justify-center rounded-lg" aria-label="Tutup">
             <X size={18} aria-hidden="true" />
           </button>
         </div>
@@ -135,10 +141,10 @@ const UnlockModal: React.FC<UnlockModalProps> = ({
             )}
 
             {error && (
-              <div className="text-red-600 text-xs bg-red-50 rounded-md p-2.5 border border-red-200 font-medium">
+              <div className="text-red-500 text-xs bg-red-500/10 rounded-md p-2.5 border border-red-500/30 font-medium">
                 {error}
                 {insufficient && (
-                  <Link to="/wallet" className="block mt-1 font-bold underline text-primary">
+                  <Link to="/wallet" className="block mt-1 font-bold underline text-ink">
                     {t('detail.goToWallet')}
                   </Link>
                 )}
@@ -241,7 +247,7 @@ const TipModal: React.FC<TipModalProps> = ({ creatorName, creatorId, comicId, co
           <>
             <div className="flex items-center justify-between">
               <h2 className="font-heading font-bold text-primary text-base">{t('tip.modalTitle', { creator: creatorName })}</h2>
-              <button onClick={onClose} className="text-gray-400 hover:text-gray-700 cursor-pointer" aria-label="Tutup">
+              <button onClick={onClose} className="text-ink-muted hover:text-ink cursor-pointer min-w-10 min-h-10 flex items-center justify-center rounded-lg" aria-label="Tutup">
                 <X size={18} aria-hidden="true" />
               </button>
             </div>
@@ -415,9 +421,19 @@ interface ChapterItemProps {
   comicTitle: string;
   creatorId?: string;
   userId?: string;
+  isRead?: boolean;
+  isLastRead?: boolean;
 }
 
-const ChapterItem: React.FC<ChapterItemProps> = ({ chapter, comicId, comicTitle, creatorId, userId }) => {
+const ChapterItem: React.FC<ChapterItemProps> = ({
+  chapter,
+  comicId,
+  comicTitle,
+  creatorId,
+  userId,
+  isRead = false,
+  isLastRead = false,
+}) => {
   const { t } = useLanguage();
   const [unlocked, setUnlocked] = useState(!chapter.isPremium);
   const [showUnlock, setShowUnlock] = useState(false);
@@ -437,44 +453,75 @@ const ChapterItem: React.FC<ChapterItemProps> = ({ chapter, comicId, comicTitle,
         {canRead ? (
           <Link
             to={`/read/${comicId}/${chapter.number}`}
-            className="flex items-center justify-between bg-surface/70 hover:bg-surface border border-primary/15 rounded-xl px-5 py-4 transition-colors group"
+            className={`flex items-center justify-between gap-3 rounded-xl px-5 py-4 transition-colors group border ${
+              isLastRead
+                ? 'bg-surface border-primary shadow-sm'
+                : isRead
+                ? 'bg-surface/45 hover:bg-surface/80 border-[var(--color-line)]'
+                : 'bg-surface/80 hover:bg-surface border-[var(--color-line)]'
+            }`}
           >
-            <div className="flex items-center gap-3">
-              <span className="font-heading font-bold text-primary text-sm">
+            <div className="flex items-center gap-2.5 flex-wrap min-w-0">
+              <span
+                className={`font-heading font-bold text-sm ${
+                  isRead && !isLastRead ? 'text-ink-muted' : 'text-ink'
+                }`}
+              >
                 {t('detail.chapterWord')} {chapter.number}
                 {chapter.title ? ` — ${chapter.title}` : ''}
               </span>
+              {isLastRead && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary text-white rounded-md text-[10px] font-bold">
+                  <Play size={10} className="fill-current" aria-hidden="true" />
+                  {t('detail.lastReadBadge')}
+                </span>
+              )}
+              {isRead && !isLastRead && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-700 text-white rounded-md text-[10px] font-semibold">
+                  <CheckCircle2 size={11} aria-hidden="true" />
+                  {t('detail.readStatus')}
+                </span>
+              )}
               {chapter.isPremium && (
-                <span className="flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-md text-[10px] font-semibold">
+                <span className="flex items-center gap-1 px-2 py-0.5 bg-ink/10 text-ink border border-[var(--color-line)] rounded-md text-[10px] font-semibold">
                   <Unlock size={10} aria-hidden="true" />
                   Terbuka
                 </span>
               )}
               {!chapter.isPremium && (
-                <span className="px-2 py-0.5 bg-surface text-primary/70 border border-primary/15 rounded-md text-[10px] font-semibold">
+                <span className="px-2 py-0.5 bg-background text-ink-muted border border-[var(--color-line)] rounded-md text-[10px] font-semibold">
                   {t('detail.freeChapter')}
                 </span>
               )}
             </div>
-            <span className="text-xs font-semibold text-gray-500 group-hover:text-primary transition-colors">{t('detail.readChapter')} →</span>
+            <span className="text-xs font-semibold text-ink-muted group-hover:text-ink transition-colors shrink-0">
+              {t('detail.readChapter')} →
+            </span>
           </Link>
         ) : (
           <button
+            type="button"
             onClick={() => setShowUnlock(true)}
-            className="w-full flex items-center justify-between bg-surface/50 hover:bg-surface border border-primary/15 rounded-xl px-5 py-4 transition-colors group text-left cursor-pointer"
+            className="w-full flex items-center justify-between gap-3 bg-surface/50 hover:bg-surface border border-[var(--color-line)] rounded-xl px-5 py-4 transition-colors group text-left cursor-pointer"
           >
-            <div className="flex items-center gap-3">
-              <span className="font-heading font-semibold text-primary/70 text-sm">
+            <div className="flex items-center gap-2.5 flex-wrap min-w-0">
+              <span className="font-heading font-semibold text-ink-muted text-sm">
                 {t('detail.chapterWord')} {chapter.number}
                 {chapter.title ? ` — ${chapter.title}` : ''}
               </span>
-              <span className="flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-md text-[10px] font-semibold">
+              {isRead && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-700 text-white rounded-md text-[10px] font-semibold">
+                  <CheckCircle2 size={11} aria-hidden="true" />
+                  {t('detail.readStatus')}
+                </span>
+              )}
+              <span className="flex items-center gap-1 px-2 py-0.5 bg-ink/10 text-ink border border-[var(--color-line)] rounded-md text-[10px] font-semibold">
                 <Lock size={10} aria-hidden="true" />
                 {t('detail.premiumChapter')}
               </span>
             </div>
-            <span className="flex items-center gap-1 text-xs font-semibold text-primary group-hover:text-primary-hover shrink-0">
-              <Coins size={13} className="text-primary/70" aria-hidden="true" />
+            <span className="flex items-center gap-1 text-xs font-semibold text-ink group-hover:opacity-80 shrink-0">
+              <Coins size={13} className="text-ink-muted" aria-hidden="true" />
               {t('detail.unlockPrice', { coins: chapter.priceCoins })}
             </span>
           </button>
@@ -528,6 +575,15 @@ export const ComicDetail: React.FC = () => {
   // Tip modal
   const [showTip, setShowTip] = useState(false);
   const [tipRefreshKey, setTipRefreshKey] = useState(0);
+
+  // Progres baca per chapter
+  const [readingProgress, setReadingProgress] = useState<ComicReadingProgress>({
+    lastChapterNumber: null,
+    lastChapterId: null,
+    lastChapterTitle: null,
+    readChapterIds: [],
+    readChapterNumbers: [],
+  });
 
   // Load comic data
   useEffect(() => {
@@ -583,11 +639,20 @@ export const ComicDetail: React.FC = () => {
     return () => { cancelled = true; };
   }, [isCreator, creator?.authorId, user]);
 
-  // Reading history
+  // Reading history & chapter-level progress
   useEffect(() => {
     if (!user || !comicId || !title) return;
     recordView({ comicId, title, cover: realCover });
   }, [comicId, title, realCover, user]);
+
+  useEffect(() => {
+    if (!user || !comicId || !isCreator) return;
+    let cancelled = false;
+    getComicReadingProgress(comicId).then((progress) => {
+      if (!cancelled) setReadingProgress(progress);
+    });
+    return () => { cancelled = true; };
+  }, [comicId, isCreator, user]);
 
   // Community link
   useEffect(() => {
@@ -661,10 +726,10 @@ export const ComicDetail: React.FC = () => {
           {t('common.loadError')}
         </div>
         <div className="flex gap-3">
-          <button onClick={handleRetry} className="px-6 py-3 bg-primary text-white font-bold rounded-full hover:bg-primary/90">
+          <button onClick={handleRetry} className="px-6 py-3 min-h-11 bg-primary text-white font-bold rounded-lg hover:bg-primary-hover cursor-pointer">
             {t('common.retry')}
           </button>
-          <button onClick={() => navigate(-1)} className="px-6 py-3 border-2 border-primary text-primary font-bold rounded-full hover:bg-primary hover:text-white">
+          <button onClick={() => navigate(-1)} className="px-6 py-3 min-h-11 border-2 border-[var(--color-line)] text-ink font-bold rounded-lg hover:bg-primary hover:text-white hover:border-primary cursor-pointer">
             {t('common.back')}
           </button>
         </div>
@@ -760,7 +825,18 @@ export const ComicDetail: React.FC = () => {
 
         {/* Action buttons */}
         {user && (
-          <div className="flex flex-col items-center gap-2 mb-6">
+          <div className="flex flex-col items-center gap-3 mb-6">
+            {isCreator &&
+              readingProgress.lastChapterNumber !== null &&
+              chapters.some((c) => c.number === readingProgress.lastChapterNumber) && (
+                <Link
+                  to={`/read/${comicId}/${readingProgress.lastChapterNumber}`}
+                  className="min-h-12 px-6 py-3 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary-hover transition-colors flex items-center gap-2 shadow-sm"
+                >
+                  <Play size={16} className="fill-current" aria-hidden="true" />
+                  {t('detail.continueChapter', { chapter: readingProgress.lastChapterNumber })}
+                </Link>
+              )}
             <div className="flex flex-wrap items-center justify-center gap-2.5">
               {/* Favorite */}
               <button
@@ -768,8 +844,8 @@ export const ComicDetail: React.FC = () => {
                 onClick={handleToggleFavorite}
                 disabled={favBusy}
                 aria-pressed={isFav}
-                className={`px-4 py-2.5 rounded-md font-semibold text-xs border transition-colors flex items-center gap-2 disabled:opacity-60 cursor-pointer ${
-                  isFav ? 'bg-primary text-white border-primary' : 'bg-transparent text-primary border-primary/30 hover:bg-primary/5'
+                className={`px-4 py-2.5 min-h-11 rounded-lg font-semibold text-xs border transition-colors flex items-center gap-2 disabled:opacity-60 cursor-pointer ${
+                  isFav ? 'bg-primary text-white border-primary' : 'bg-transparent text-ink border-[var(--color-line)] hover:bg-ink/5'
                 }`}
               >
                 <Heart size={15} className={isFav ? 'fill-white' : ''} aria-hidden="true" />
@@ -783,8 +859,8 @@ export const ComicDetail: React.FC = () => {
                   onClick={handleToggleFollow}
                   disabled={followBusy}
                   aria-pressed={isFollow}
-                  className={`px-4 py-2.5 rounded-md font-semibold text-xs border transition-colors flex items-center gap-2 disabled:opacity-60 cursor-pointer ${
-                    isFollow ? 'border-primary/30 text-primary hover:bg-red-50 hover:text-red-600 hover:border-red-300' : 'bg-primary text-white border-primary hover:bg-primary-hover'
+                  className={`px-4 py-2.5 min-h-11 rounded-lg font-semibold text-xs border transition-colors flex items-center gap-2 disabled:opacity-60 cursor-pointer ${
+                    isFollow ? 'border-[var(--color-line)] text-ink hover:bg-red-500/10 hover:text-red-500 hover:border-red-400' : 'bg-primary text-white border-primary hover:bg-primary-hover'
                   }`}
                 >
                   <UserPlus size={15} aria-hidden="true" />
@@ -798,9 +874,9 @@ export const ComicDetail: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowTip(true)}
-                  className="px-4 py-2.5 rounded-md font-semibold text-xs border border-primary/30 text-primary hover:bg-primary/5 transition-colors flex items-center gap-2 cursor-pointer"
+                  className="px-4 py-2.5 min-h-11 rounded-lg font-semibold text-xs border border-[var(--color-line)] text-ink hover:bg-ink/5 transition-colors flex items-center gap-2 cursor-pointer"
                 >
-                  <Heart size={15} className="text-primary" aria-hidden="true" />
+                  <Heart size={15} className="text-ink" aria-hidden="true" />
                   {t('detail.supportAuthor')}
                 </button>
               )}
@@ -809,7 +885,7 @@ export const ComicDetail: React.FC = () => {
               {communityId && (
                 <Link
                   to={`/community/${communityId}`}
-                  className="px-4 py-2.5 rounded-md font-semibold text-xs border border-primary/30 text-primary hover:bg-primary/5 transition-colors flex items-center gap-2"
+                  className="px-4 py-2.5 min-h-11 rounded-lg font-semibold text-xs border border-[var(--color-line)] text-ink hover:bg-ink/5 transition-colors flex items-center gap-2"
                 >
                   <Users size={15} aria-hidden="true" />
                   Komunitas
@@ -849,6 +925,11 @@ export const ComicDetail: React.FC = () => {
                     comicTitle={title}
                     creatorId={creator?.authorId}
                     userId={user?.id}
+                    isRead={
+                      readingProgress.readChapterIds.includes(c.id) ||
+                      readingProgress.readChapterNumbers.includes(c.number)
+                    }
+                    isLastRead={readingProgress.lastChapterNumber === c.number}
                   />
                 ))}
               </ul>
